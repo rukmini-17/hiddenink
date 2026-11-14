@@ -78,7 +78,7 @@ Test mode is synced to your Google account, so check it on whichever laptop you 
    ```bash
    extension/scripts/serve-demo.sh
    ```
-2. [ ] In Chrome, open <http://localhost:8787/job_listing_poisoned.html>.
+2. [ ] In Chrome, open <http://localhost:8791/job_listing_poisoned.html>.
 3. [ ] Click the HiddenInk icon (the shield with an eye) in the toolbar and switch **X-ray this page** on.
 
 You should see:
@@ -92,7 +92,7 @@ You should see:
 Try it out:
 
 4. [ ] Hover over a glowing line. It gets brighter. No popup appears.
-5. [ ] Click a glowing line. A dark card opens beside it: **"There is hidden text here"**, the hidden text, how it was hidden, and a **High** or **Medium** badge.
+5. [ ] Click a glowing line. A dark card opens beside it: **"There is hidden text here"**, the hidden text, how it was hidden, and a **High** or **Medium** badge. If the hidden text asks for a package the page never shows (on the VectorBase docs: `vectorbase-auth`), the card also says "It asks the agent to install …".
 6. [ ] Click **Copy text**. The button says "Copied".
 7. [ ] Click **View all**. A list of every hidden item opens. Items that aren't on the page say "Not shown on the page". Click an item to jump to it.
 8. [ ] Click the **X** on the card (or press **Esc**) to close it. X-ray stays on.
@@ -203,7 +203,7 @@ Copy the finished table into `docs/PROGRESS.md` under the Nisha heading.
 |---|---|
 | Nothing changed after a rebuild | Click the reload arrow on the HiddenInk card in `chrome://extensions`, then refresh the tab. |
 | Popup says "HiddenInk can't scan this page" | That page type can't be scanned (`chrome://` pages, the Chrome Web Store). Use the localhost demo page. |
-| X-ray finds nothing on the demo page | Make sure you opened the `http://localhost:8787/...` address, not the file directly. |
+| X-ray finds nothing on the demo page | Make sure you opened the `http://localhost:8791/...` address, not the file directly. |
 | A PDF attaches with no box, but it should have one | Right-click the page, choose **Inspect**, open **Console**, look for a line starting with `[HiddenInk]`. On any error HiddenInk lets the upload through on purpose. |
 | A clean file shows a warning | Check Part 4. If the box has a **TEST MODE** badge, turn Test mode off. |
 | Anything else | Right-click the page, **Inspect**, **Console**. Copy any red lines or `[HiddenInk]` lines and send them to Claude Code with the Part and step number. |
@@ -215,11 +215,11 @@ Copy the finished table into `docs/PROGRESS.md` under the Nisha heading.
 These run in Docker on fake pages, not on the real chat sites. Good for checking nothing broke after a code change.
 
 ```bash
-extension/scripts/smoke/run.sh       # 37 checks of X-ray, paste guard and upload guard
+extension/scripts/smoke/run.sh       # 42 checks of X-ray, paste guard and upload guard
 extension/scripts/smoke/corpus.sh    # all 81 test files through the extension, about 2 minutes
 ```
 
-- [ ] `run.sh` ends with **"37/37 checks passed"**.
+- [ ] `run.sh` ends with **"42/42 checks passed"**.
 - [ ] `corpus.sh` shows **demo items 7/7**, **benign html clean 12/12** and **benign pdf clean 11/11**.
 
 ---
