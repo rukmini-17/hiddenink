@@ -1,0 +1,13 @@
+[project]
+name = "hiddenink-corpus"
+version = "0.1.0"
+description = "Generates HiddenInk's test corpus: attack and benign web pages and PDFs, plus demo files."
+requires-python = ">=3.11"
+dependencies = [
+    "reportlab>=4.2",
+    "pillow>=11.0",
+    "playwright>=1.49",
+]
+
+[tool.uv]
+package = false
