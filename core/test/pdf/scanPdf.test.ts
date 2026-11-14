@@ -1,8 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { scanPdf } from "../../src/index";
 import type { Finding, ScanResult } from "../../src/types";
-import { onePage, PAYLOAD, resumeContent, scannedPage } from "./fixtures";
+import { onePage, PAYLOAD, resumeContent } from "./fixtures";
 import { makePdf, rect, text, toArrayBuffer } from "./makePdf";
+import { scannedPage } from "./scannedFixture";
 
 const scan = (bytes: Uint8Array): Promise<ScanResult> => scanPdf(toArrayBuffer(bytes));
 const flagged = (r: ScanResult) => r.findings.filter((f) => f.flagged);
@@ -69,7 +70,7 @@ describe("legitimate PDFs", () => {
   });
 
   it("a scanned page with an OCR text layer has no findings", async () => {
-    const result = await scan(await scannedPage());
+    const result = await scan(scannedPage());
     expect(result.findings).toEqual([]);
     expect(result.visibleText).toContain("Senior Software Engineer");
   });

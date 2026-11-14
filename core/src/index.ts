@@ -1,5 +1,5 @@
 // Public API of the HiddenInk engine.
-// Implemented: scanDocument, scanClipboardHtml (R1), scanText, cleanText (R2). Stub: scanPdf (R4).
+// scanDocument, scanClipboardHtml (R1), scanText, cleanText (R2), scanPdf (R4).
 
 import type { ScanOptions, ScanResult } from "./types";
 import { applyScore } from "./scorer/applyScore";
@@ -21,7 +21,11 @@ export function scanText(text: string, opts?: ScanOptions): ScanResult {
   };
 }
 
-/** Scan PDF bytes (upload guard). */
-export async function scanPdf(_data: ArrayBuffer, _opts?: ScanOptions): Promise<ScanResult> {
-  return { findings: [], visibleText: "" };
+/**
+ * Scan PDF bytes (upload guard). pdf.js is large (~1 MB), so it's loaded only on first use:
+ * the paste guard and X-ray never pay for it. The caller's ArrayBuffer is left intact.
+ */
+export async function scanPdf(data: ArrayBuffer, opts?: ScanOptions): Promise<ScanResult> {
+  const { scanPdfImpl } = await import("./pdf/scanPdf");
+  return scanPdfImpl(data, opts);
 }
