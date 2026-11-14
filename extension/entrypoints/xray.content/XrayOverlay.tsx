@@ -95,6 +95,11 @@ export function XrayOverlay({ findings, onClose }: { findings: Finding[]; onClos
     };
   }, [open]);
 
+  // A card opened near the bottom of the window would be cut off: scroll just enough to show it.
+  useEffect(() => {
+    if (open?.kind === "card" && open.at) cardRef.current?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+  }, [open]);
+
   function openCard(f: Finding) {
     const p = placed.find((x) => x.finding.id === f.id);
     if (!p) return setOpen({ kind: "card", id: f.id }); // not on the page: card floats under the top bar
@@ -140,12 +145,12 @@ export function XrayOverlay({ findings, onClose }: { findings: Finding[]; onClos
           </div>
         ))}
         {cardFinding && open?.kind === "card" && open.at && (
-          <HiddenTextCard ref={cardRef} finding={cardFinding} onPage total={flagged.length} onViewAll={() => setOpen({ kind: "list" })} className="absolute z-20" style={{ left: open.at.left, top: open.at.top }} />
+          <HiddenTextCard ref={cardRef} finding={cardFinding} onPage total={flagged.length} onViewAll={() => setOpen({ kind: "list" })} onClose={() => setOpen(null)} className="absolute z-20" style={{ left: open.at.left, top: open.at.top }} />
         )}
       </div>
 
       {cardFinding && open?.kind === "card" && !open.at && (
-        <HiddenTextCard ref={cardRef} finding={cardFinding} onPage={false} total={flagged.length} onViewAll={() => setOpen({ kind: "list" })} className="fixed right-4 top-16 z-40" />
+        <HiddenTextCard ref={cardRef} finding={cardFinding} onPage={false} total={flagged.length} onViewAll={() => setOpen({ kind: "list" })} onClose={() => setOpen(null)} className="fixed right-4 top-16 z-40" />
       )}
 
       <TopBar count={flagged.length} onViewAll={() => setOpen({ kind: "list" })} onClose={onClose} />

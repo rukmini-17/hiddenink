@@ -95,7 +95,7 @@ Try it out:
 5. [ ] Click a glowing line. A dark card opens beside it: **"There is hidden text here"**, the hidden text, how it was hidden, and a **High** or **Medium** badge.
 6. [ ] Click **Copy text**. The button says "Copied".
 7. [ ] Click **View all**. A list of every hidden item opens. Items that aren't on the page say "Not shown on the page". Click an item to jump to it.
-8. [ ] Press **Esc** to close the card or list. X-ray stays on.
+8. [ ] Click the **X** on the card (or press **Esc**) to close it. X-ray stays on.
 9. [ ] Scroll up and down. The glowing text stays on its spot.
 10. [ ] Click the **X** in the top bar. Everything goes back to normal.
 
