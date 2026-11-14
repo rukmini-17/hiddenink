@@ -29,7 +29,7 @@ export default defineContentScript({
       result = scanDocument(document);
       if (settings.current.testMode && flaggedOf(result.findings).length === 0) result = fakeDomResult(document);
       on = true;
-      await host.render(<XrayOverlay findings={result.findings} onClose={hide} />);
+      await host.render(<XrayOverlay findings={result.findings} visibleText={result.visibleText} onClose={hide} />);
       void sendToBackground({ type: "xray:count", flagged: flaggedOf(result.findings).length });
     }
 
