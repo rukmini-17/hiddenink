@@ -9,6 +9,9 @@ import type { Finding, Technique } from "@hiddenink/core";
 export type DocRect = { x: number; y: number; w: number; h: number };
 export type Placed = { finding: Finding; rect: DocRect; width: number };
 
+/** No box of their own: `core` points at the parent element, so drawing there would cover real text. */
+const NO_OWN_BOX: Technique[] = ["html_comment"];
+
 /** Characters hidden inside visible text: draw the copy just under that text instead of on top of it. */
 const INSIDE_VISIBLE_TEXT: Technique[] = ["unicode_tags", "zero_width", "bidi", "variation_selectors"];
 
@@ -31,7 +34,17 @@ function documentRect(f: Finding): DocRect | null {
   return null;
 }
 
+/** Width of the block the hidden text belongs to, so the copy wraps like the page's own text. */
+function blockWidth(f: Finding): number {
+  const el = resolveElement(f);
+  if (!el) return 0;
+  const w = el.getBoundingClientRect().width;
+  if (w >= MIN_WIDTH) return w;
+  return el.parentElement?.getBoundingClientRect().width ?? w; // e.g. a 1×1 image carrying alt text
+}
+
 export function place(f: Finding): Placed | null {
+  if (NO_OWN_BOX.includes(f.technique)) return null;
   const r = documentRect(f);
   if (!r) return null;
   const docW = document.documentElement.scrollWidth;
@@ -41,6 +54,6 @@ export function place(f: Finding): Placed | null {
   const x = Math.max(8, r.x);
   const y = INSIDE_VISIBLE_TEXT.includes(f.technique) ? r.y + r.h + 2 : Math.max(0, r.y);
   const room = Math.max(MIN_WIDTH, docW - x - 8);
-  const width = Math.min(Math.max(r.w, MIN_WIDTH), room);
+  const width = Math.min(Math.max(r.w, blockWidth(f), MIN_WIDTH), room);
   return { finding: f, rect: { x, y, w: r.w, h: r.h }, width };
 }

@@ -55,9 +55,11 @@ classifier. A `DOMParser` document has no layout (and never runs scripts or load
 `scanClipboardHtml.ts` reads **inline `style=""` only**. That works because Chrome inlines computed
 styles (color, background-color, font-size…) when you copy. It detects display/visibility, opacity,
 transparent color, font-size in px/pt, far-negative `left`/`top`/`text-indent`, zero-size + overflow
-hidden, `max-height:0`, `clip`/`clip-path`, `scale(0)`, and low contrast. **Low contrast needs an
-explicit inline background**: copying light text from a dark page gives no background, and assuming
-white would flag everything.
+hidden, `max-height:0`, `clip`/`clip-path`, `scale(0)`, and low contrast. **Low contrast and the
+missing background**: Chrome inlines text colors but usually not the page background (it sits on
+`<body>`, outside the selection), so white text from a white page arrives with no background. Where
+there's no inline background, the scanner assumes white if most of the copied text is dark (a light
+page), and assumes nothing if most of it is light (a dark-mode page, so light text isn't flagged).
 
 **Limitations**: background images (above); text inside SVG, iframes and shadow roots isn't scanned;
 text covered by another element (z-index overlap) isn't detected (PDF render-and-sample handles that

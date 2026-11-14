@@ -19,9 +19,10 @@ const INLINE_TAGS = new Set([
 export function scanClipboardHtml(html: string, opts?: ScanOptions): ScanResult {
   // DOMParser never runs scripts or loads images, so untrusted clipboard HTML is safe to parse.
   const doc = new DOMParser().parseFromString(html, "text/html");
+  const pageBg = assumedPageBackground(doc);
   return runWebScan(doc, {
     threshold: opts?.threshold ?? DEFAULT_THRESHOLD,
-    classify: (node) => ({ hiding: classifyInline(node.parentElement!) }),
+    classify: (node) => ({ hiding: classifyInline(node.parentElement!, pageBg) }),
     isInline: (el) => {
       const display = (el as HTMLElement).style?.display;
       return display ? display.startsWith("inline") : INLINE_TAGS.has(el.tagName);
@@ -31,7 +32,7 @@ export function scanClipboardHtml(html: string, opts?: ScanOptions): ScanResult 
 
 const style = (el: Element) => (el as HTMLElement).style;
 
-function classifyInline(el: Element): Hiding | null {
+function classifyInline(el: Element, pageBg: RGBA | null): Hiding | null {
   for (const node of ancestors(el)) {
     const s = style(node);
     if (!s) continue;
@@ -70,7 +71,7 @@ function classifyInline(el: Element): Hiding | null {
   }
 
   if (colorEl && fg) {
-    const bg = inlineBackground(el);
+    const bg = inlineBackground(el) ?? pageBg;
     if (bg && contrastRatio(composite(fg, bg), bg) < L.minContrast) {
       return { technique: "low_contrast", element: colorEl, reason: "the text is almost the same color as the background" };
     }
@@ -134,6 +135,30 @@ function inlineBackground(el: Element): RGBA | null {
   }
   if (layers.length === 0) return null;
   return layers.reduceRight<RGBA>((under, layer) => composite(layer, under), WHITE);
+}
+
+/**
+ * The page background to assume where the copied HTML has none inline.
+ *
+ * Chrome inlines each element's text color when copying, but usually not the page's background
+ * (it sits on <body>, outside the selection). So a white line copied from a white page arrives
+ * as "white text, no background". If most of the copied text is dark, the page was light: assume
+ * white, so near-white text counts as hidden. If most of it is light, the page was dark (dark mode):
+ * assume nothing, so light text isn't flagged. Text with no inline color counts as dark (the default).
+ */
+function assumedPageBackground(doc: Document): RGBA | null {
+  let light = 0;
+  let total = 0;
+  const walker = doc.createTreeWalker(doc.body ?? doc.documentElement, NodeFilter.SHOW_TEXT);
+  for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+    const n = (node.textContent ?? "").trim().length;
+    if (!n || !node.parentElement) continue;
+    total += n;
+    const colorEl = nearest(node.parentElement, "color");
+    const fg = colorEl ? parseColor(normalizeColor(style(colorEl).color)) : null;
+    if (fg && contrastRatio(composite(fg, WHITE), WHITE) < L.minContrast) light += n;
+  }
+  return total > 0 && light / total < 0.5 ? WHITE : null;
 }
 
 const NAMED: Record<string, string> = { white: "rgb(255, 255, 255)", black: "rgb(0, 0, 0)" };

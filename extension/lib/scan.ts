@@ -14,7 +14,10 @@ export function hasFlagged(result: ScanResult): boolean {
 export function scanPaste(text: string, html: string, testMode: boolean): ScanResult {
   const plain = scanText(text);
   const rich = html ? scanClipboardHtml(html) : { findings: [], visibleText: "" };
-  const findings = [...plain.findings, ...rich.findings.map((f) => ({ ...f, id: `html-${f.id}` }))];
+  // Both flavours see the same invisible characters, so drop HTML findings the plain scan already has.
+  const key = (f: { technique: string; text: string; decoded?: string }) => `${f.technique}|${(f.decoded ?? f.text).replace(/\s+/g, " ").trim()}`;
+  const seen = new Set(plain.findings.map(key));
+  const findings = [...plain.findings, ...rich.findings.filter((f) => !seen.has(key(f))).map((f) => ({ ...f, id: `html-${f.id}` }))];
   // When the HTML flavour found hidden styled text, its visibleText is the one with that text removed.
   const visibleText = rich.findings.length > 0 ? rich.visibleText : plain.visibleText;
   const result: ScanResult = { findings, visibleText };

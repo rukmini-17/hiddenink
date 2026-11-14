@@ -57,6 +57,22 @@ export function XrayOverlay({ findings, onClose }: { findings: Finding[]; onClos
   const lineRefs = useRef(new Map<string, HTMLDivElement>());
 
   const [open, setOpen] = useState<Open>(null);
+
+  // Two hidden lines can sit close together while their glowing copies (15px text) are taller than
+  // the originals. After drawing, push any copy that would overlap the one above it down.
+  const [tops, setTops] = useState<Map<string, number>>(new Map());
+  useLayoutEffect(() => {
+    const next = new Map<string, number>();
+    let prevBottom = -Infinity;
+    for (const p of [...placed].sort((a, b) => a.rect.y - b.rect.y)) {
+      const h = lineRefs.current.get(p.finding.id)?.offsetHeight ?? 22;
+      const top = Math.max(p.rect.y, prevBottom + 4);
+      next.set(p.finding.id, top);
+      prevBottom = top + h;
+    }
+    setTops(next);
+  }, [placed]);
+  const topOf = (p: Placed) => tops.get(p.finding.id) ?? p.rect.y;
   const plainDim = XRAY_PLAIN_DIM_HOSTS.includes(location.hostname);
 
   // A new scan (resize) invalidates whatever was open.
@@ -83,13 +99,13 @@ export function XrayOverlay({ findings, onClose }: { findings: Finding[]; onClos
     const p = placed.find((x) => x.finding.id === f.id);
     if (!p) return setOpen({ kind: "card", id: f.id }); // not on the page: card floats under the top bar
     const h = lineRefs.current.get(f.id)?.offsetHeight ?? 22;
-    setOpen({ kind: "card", id: f.id, at: cardPosition(p, h) });
+    setOpen({ kind: "card", id: f.id, at: cardPosition({ ...p, rect: { ...p.rect, y: topOf(p) } }, h) });
   }
 
   function pickFromList(f: Finding) {
     const p = placed.find((x) => x.finding.id === f.id);
     if (p) {
-      window.scrollTo({ top: Math.max(0, p.rect.y - window.innerHeight / 3), behavior: "instant" as ScrollBehavior });
+      window.scrollTo({ top: Math.max(0, topOf(p) - window.innerHeight / 3), behavior: "instant" as ScrollBehavior });
     }
     openCard(f);
   }
@@ -116,7 +132,7 @@ export function XrayOverlay({ findings, onClose }: { findings: Finding[]; onClos
             tabIndex={0}
             data-hiddenink-id={p.finding.id}
             data-active={activeId === p.finding.id}
-            style={{ left: p.rect.x, top: p.rect.y, width: p.width }}
+            style={{ left: p.rect.x, top: topOf(p), width: p.width }}
             onClick={() => openCard(p.finding)}
             onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && openCard(p.finding)}
           >

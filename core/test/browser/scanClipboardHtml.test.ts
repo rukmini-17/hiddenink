@@ -33,6 +33,16 @@ describe("scanClipboardHtml", () => {
     expect(flaggedTechniques(html)).toEqual([]);
   });
 
+  it("flags white text copied from a white page even when no background was copied", () => {
+    // What Chrome writes for Cmd+A on a white page: text colors inlined, the body's background not.
+    const html = `<meta charset="utf-8"><h1 style="color: rgb(29, 29, 31);">Machine Learning Engineer</h1>` +
+      `<p style="color: rgb(29, 29, 31); font-size: 16px;">Train and ship forecasting models in Python.</p>` +
+      `<p style="color: rgb(255, 255, 255); font-size: 16px;">${PAYLOAD}</p>` +
+      `<p style="color: rgb(29, 29, 31); font-size: 16px;">Hybrid, New York.</p>`;
+    expect(flaggedTechniques(html)).toEqual(["low_contrast"]);
+    expect(scanClipboardHtml(html).visibleText).not.toContain(PAYLOAD);
+  });
+
   it("ignores sr-only accessibility text", () => {
     const sr = "position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0px, 0px, 0px, 0px);";
     expect(scanClipboardHtml(wrap(`Docs<span style="${sr}">(opens in a new window)</span>`)).findings).toEqual([]);
