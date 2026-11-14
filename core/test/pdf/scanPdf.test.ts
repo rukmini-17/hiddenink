@@ -122,6 +122,14 @@ describe("findings shape", () => {
     );
   });
 
+  it("visibleText has no control characters when a font's glyphs extract as U+0000", async () => {
+    // "~~}|" extract as NUL NUL BEL ESC with this font.
+    const bytes = onePage(text(72, 600, "References available.~~}|", { font: "missing-glyphs" }));
+    const { visibleText } = await scan(bytes);
+    expect(visibleText).toContain("References available.");
+    expect(visibleText).not.toMatch(/[\u0000-\u0008\u000B-\u001F\u007F-\u009F]/);
+  });
+
   it("does not detach the caller's ArrayBuffer (the upload guard re-sends it)", async () => {
     const buf = toArrayBuffer(onePage());
     await scanPdf(buf);

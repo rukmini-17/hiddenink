@@ -8,6 +8,14 @@ export function fromCodePoints(cps: number[]): string {
   return out;
 }
 
+/**
+ * Control characters that never belong in clean text: C0 (except tab and newline), DEL, C1.
+ * PDFs produce them (subset fonts extract unmappable glyphs as U+0000), and terminals/apps leak
+ * ESC/BEL. Line-break controls (CR, FF, VT, NEL) are turned into "\n" before this check.
+ */
+export const isControl = (cp: number) =>
+  (cp <= 0x1f && cp !== 0x09 && cp !== 0x0a) || (cp >= 0x7f && cp <= 0x9f);
+
 /** U+E0000–U+E007F: "tag" characters. Invisible, but each maps 1:1 to an ASCII char. */
 export const isTag = (cp: number) => cp >= 0xe0000 && cp <= 0xe007f;
 export const TAG_CANCEL = 0xe007f;

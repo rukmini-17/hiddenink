@@ -3,7 +3,7 @@
 
 import {
   BLACK_FLAG, BOM, TAG_CANCEL, ZWJ, ZWNJ,
-  isBidi, isEmojiPart, isFlagTag, isNonLatinLetter, isTag, isVariationSelector, isZeroWidth,
+  isBidi, isControl, isEmojiPart, isFlagTag, isNonLatinLetter, isTag, isVariationSelector, isZeroWidth,
 } from "./chars";
 import { UNICODE_LIMITS } from "./limits";
 
@@ -15,6 +15,7 @@ export type SegmentKind =
   | "emoji_vs"      // a short run of variation selectors (normal after emoji)
   // removed by cleanText, never reported
   | "bom"           // a single leading byte-order mark
+  | "control"       // C0/C1 control characters and DEL (junk, not an attack technique)
   // removed by cleanText and reported
   | "unicode_tags" | "zero_width" | "bidi" | "variation_selectors";
 
@@ -63,6 +64,10 @@ export function segment(text: string): Segment[] {
     } else if (isBidi(cp)) {
       const j = runEnd(i, isBidi);
       push("bidi", i, j);
+      i = j;
+    } else if (isControl(cp)) {
+      const j = runEnd(i, isControl);
+      push("control", i, j);
       i = j;
     } else if (isVariationSelector(cp)) {
       const j = runEnd(i, isVariationSelector);
