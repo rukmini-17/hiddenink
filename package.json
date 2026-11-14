@@ -1,0 +1,9 @@
+{
+  "name": "hiddenink",
+  "private": true,
+  "packageManager": "pnpm@9.15.0",
+  "scripts": {
+    "build:core": "pnpm --filter @hiddenink/core build",
+    "test": "pnpm --filter @hiddenink/core test"
+  }
+}
