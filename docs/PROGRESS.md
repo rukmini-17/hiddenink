@@ -17,5 +17,11 @@ Append-only. Write 2–4 lines under your own heading after each task.
   **Nisha:** show only `flagged` findings. Web `bbox` is `[x, y, w, h]` in document CSS px (not viewport), and
   `selector` works with `querySelector`. For paste guard, run both `scanText` and `scanClipboardHtml` and use the
   HTML one's `visibleText` when it has findings. Web tests run in installed Chrome (`pnpm test`).
+- **R4 done** (branch `rukmini/r4-pdf-engine`): `scanPdf` detects `pdf_invisible` (render-and-sample: white text,
+  invisible mode, covered/redacted text), `pdf_tiny_font` and `pdf_offpage`, plus Unicode tricks. It skips OCR layers
+  and tiny page numbers/footers. Same flag rule as the web. bbox format is now in `docs/CONTRACTS.md`.
+  **Nisha:** `await scanPdf(fileBytes)` needs no worker setup; call it from the content script, not the
+  service worker. Your buffer isn't detached, so you can re-send it. Draw boxes at `bbox × renderScale` on page
+  `location.page` (1-indexed). pdf.js loads lazily (~2.3 MB) the first time `scanPdf` is called.
 
 ## Nisha

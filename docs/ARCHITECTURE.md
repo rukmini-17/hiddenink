@@ -104,12 +104,74 @@ Stage 2 classifier.
 
 ### Testing
 
-`core/vitest.workspace.ts` has two projects: **unit** (jsdom: Unicode, scorer, API shape) and
-**browser** (headless Chrome via Playwright: web engine and clipboard). The web engine needs
+`core/vitest.workspace.ts` has three projects: **unit** (jsdom: Unicode, scorer, API shape),
+**pdf** (Node: PDF engine) and **browser** (headless Chrome via Playwright: web engine, clipboard, scanPdf). The web engine needs
 real layout (rects, computed styles, `checkVisibility`), which jsdom doesn't implement.
 Browser tests use the installed Google Chrome (`channel: "chrome"`), so no Playwright browser
 download is needed. Set `PW_BUNDLED_CHROMIUM=1` to use Playwright's own Chromium instead.
 
-### PDF (R4)
+### PDF (R4): `core/src/pdf/`
 
-- PDF (R4):
+`scanPdf(bytes)` runs per page:
+
+1. **Text items** (`textItems.ts`): pdf.js `getTextContent`, each item turned into a top-left box at scale 1
+   (viewport transform × text transform, height from the font's ascent/descent).
+2. **Render** (`sample.ts`): the page is drawn onto a white canvas at 2× (144 dpi), the way a viewer shows it.
+3. **Render-and-sample**: for each text box, find the box's dominant color and count pixels that differ
+   from it by > 32 in any channel (≈ the web engine's 1.3 contrast cutoff). **Less than 1% "ink" = a
+   person sees nothing there**, so it's `pdf_invisible`. This one check catches white or near-white text,
+   render mode 3 (invisible), text covered by a white shape, and text under a black redaction bar.
+   It works on any background color, because "ink" is measured against the box's own dominant color.
+4. **Operator walk** (`operators.ts`), for two things **pdf.js's text extraction throws away on purpose**:
+   it drops glyphs outside the page box, and it strips "invisible format" characters (Unicode tags,
+   zero-width, bidi). Other extractors that AI tools use (pdftotext, PyPDF…) may keep both. So we walk
+   pdf.js's operator list (the page's drawing instructions) with a small PDF text-state machine
+   (text matrix, CTM, font size, spacing, `TJ` kerning) to place every text run and keep its raw Unicode.
+   The same pass detects **scanned pages**: an image drawn over ≥ 60% of the page.
+5. **Classify** (`classify.ts`), first match wins:
+   - `pdf_offpage`: the box is entirely outside the crop box (from the operator walk; nothing to sample).
+   - `pdf_tiny_font`: glyph height < 3pt. Checked before pixels because font size is exact and tiny
+     glyphs are hard to sample. "It's also the same color as the background" is added when there's no ink.
+   - `pdf_invisible`: no ink (step 3).
+6. **Group** neighbouring hidden items (same line, or the next line with a similar left edge) into one
+   finding with a union `bbox`; run `scanUnicode` on every raw run; score everything.
+
+**Flag rule (same as the web):** hidden PDF text is `flagged` only if `aiScore ≥ 0.5`. Hidden text that
+isn't AI-aimed (e.g. white keyword-stuffing like "Python Kubernetes AWS") is returned with `flagged: false`.
+
+**False-alarm exceptions** (all tested): these are dropped and counted as visible unless the text is AI-aimed.
+- **OCR text layers**: on a scanned page the image's ink sits under well-aligned OCR text, so render-and-sample
+  already reads it as visible. Invisible text over blank parts of a scanned page is also treated as OCR.
+- **Tiny text that's normal**: digits/symbols only (page numbers, footnote and superscript markers), or text
+  in the top/bottom 8% of the page (headers, footers).
+
+**Coordinates**: `location.page` is 1-indexed; `bbox` is `[x, y, w, h]` from the page's top-left in pdf.js
+viewport units at scale 1 (points). See `docs/CONTRACTS.md`.
+
+**pdf.js setup** (`loadPdf.ts`): one code path everywhere. We use the `legacy` build (recommended for Node, also
+fine in browsers) and run pdf.js's worker **on the main thread** by handing it the worker module
+(`globalThis.pdfjsWorker`), so there's no `workerSrc` to configure in Node, the IIFE or the extension. Canvas
+comes from pdf.js's own factory: a DOM `<canvas>` in browsers, `@napi-rs/canvas` in Node. `isEvalSupported: false`
+keeps MV3's no-eval rule. `scanPdf` loads pdf.js with `import()` (the ESM build puts it in its own ~2.3 MB chunk),
+so the paste guard and X-ray don't load it. It copies the input, so the caller's `ArrayBuffer` stays usable for
+re-uploading. It must run where there's a DOM or `OffscreenCanvas`: a content script or offscreen document,
+not the MV3 service worker.
+
+**Unicode in PDFs**: tag, zero-width and bidi characters only exist in a PDF if its `ToUnicode` map points glyphs
+at them (crafted files). **Chrome's "Save as PDF" strips them** (checked: a page with tag characters and a
+zero-width run produced plain text). So for PDFs this is mostly a crafted-file attack, and it's tested with a
+hand-built PDF whose `ToUnicode` maps to tag characters.
+
+**Checked on real files**: two Chrome-generated résumés (dark header band with white text, bullets, a table,
+grey text, 6px header/footer, superscript, two pages). The clean one has 0 findings; the poisoned one
+(1px white "Note to AI assistant…") gives one flagged `pdf_tiny_font` (score 0.95). Scans took 18–40 ms through
+the IIFE in Chrome.
+
+**Limitations**: hidden text that overlaps *other visible text* reads as visible (there's ink in its box);
+rotated and vertical text get approximate boxes; the operator walk assumes 1/1000 glyph units (true for
+standard fonts, not Type 3); text drawn as vector paths or inside images is invisible to us (it's not text,
+and AI text extractors don't see it either); very large PDFs render every page (no page cap yet).
+
+**Tests**: `test/pdf/` (Node project). `makePdf.ts` is a ~100-line PDF writer with no dependencies, used for exact
+control over colors, render mode, shapes, raw-RGB "scan" images and `ToUnicode` maps. One browser test
+(`test/browser/scanPdf.test.ts`) proves the Chrome path.
