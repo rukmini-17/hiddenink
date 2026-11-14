@@ -19,3 +19,28 @@ Append-only. Write 2–4 lines under your own heading after each task.
   HTML one's `visibleText` when it has findings. Web tests run in installed Chrome (`pnpm test`).
 
 ## Nisha
+
+- **N0 + N1 + N2 + N3 + N4 + N5 built (2026-11-13):** `extension/` is a WXT MV3 extension (React + Tailwind in a
+  Shadow DOM) depending on `@hiddenink/core` via the workspace. Upload interception = capture-phase `change`/`drop`/
+  `paste` on `window` at `document_start`, replay = synthetic events from a `DataTransfer` (`extension/lib/replay.ts`).
+  PDF scanning + page previews run in an **offscreen document** with a real pdf.js Worker. Settings: `serverUrl`
+  (empty = local) + `RemoteLayers` no-op stub (`extension/lib/remote.ts`). A "Test mode" setting fakes findings so
+  the UI can be tried before the detectors land. Build/test with Docker only: see `extension/README.md`.
+- **Verified headless (22/22 checks, `extension/scripts/smoke/run.sh`):** X-ray overlay + badge, paste guard block
+  + "Paste clean", upload guard via file input and drop with pdf.js previews and bbox boxes, fail-open for non-PDFs.
+  **Still manual (N0 report pending):** the same flows on the real chatgpt.com / claude.ai / gemini.google.com
+  pages; checklist in `extension/docs/N0-upload-spike.md`.
+- **Rukmini, two things for R4:** (1) The upload guard assumes `bbox = [x, y, width, height]` in pdf.js viewport
+  units at scale 1, origin top-left; it is isolated in `extension/components/PdfPreview.tsx` if you pick something
+  else. Please write the final convention into `docs/CONTRACTS.md`. (2) If `scanPdf` renders pages, call
+  `page.render({ ..., intent: "print" })`: with the default intent pdf.js paces via `requestAnimationFrame`, which
+  never fires in the extension's offscreen document and the render hangs forever (found the hard way).
+  `GlobalWorkerOptions.workerSrc` is set by the extension before calling `scanPdf`; in the Playwright eval you'll
+  need to set it yourself.
+- **Integrated R1+R2+R3 (2026-11-14):** X-ray and paste guard now run on the real `scanDocument` / `scanText` /
+  `scanClipboardHtml`; the test-mode fakes only kick in when nothing is flagged. X-ray places outlines from the web
+  `bbox` ([x, y, w, h] document px) re-projected into the viewport on every scroll frame, falls back to the
+  `selector` rect, and lists findings with neither in the side panel; a resize triggers a fresh scan. Paste guard
+  uses the HTML scan's `visibleText` when that flavour has findings. Cards show `aiScore` as "NN% AI-aimed".
+  Headless smoke (`extension/scripts/smoke/run.sh`) now covers a real white-on-white paragraph 2500px down the page,
+  outline alignment before/after scrolling, and a real Unicode-tag paste. Upload guard still uses the `scanPdf` stub.

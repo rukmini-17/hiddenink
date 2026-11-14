@@ -113,3 +113,32 @@ download is needed. Set `PW_BUNDLED_CHROMIUM=1` to use Playwright's own Chromium
 ### PDF (R4)
 
 - PDF (R4):
+
+## Extension (`extension/`)
+
+WXT (Manifest V3) + React + Tailwind. All UI is rendered inside a Shadow DOM so page CSS and ours never mix.
+
+- **X-ray** (`entrypoints/xray.content`): on every URL, idle until the popup sends `xray:toggle`. Runs
+  `scanDocument(document)`, dims the page (pointer-events: none, so the page stays usable), draws a glowing
+  outline over each flagged finding by resolving `location.selector` and re-measuring on scroll/resize.
+  Findings without a measurable box (off-screen, zero-size, comments) go to the side panel list instead.
+  Hover/click shows a card: what it says (decoded if Unicode), how it hides, why it looks AI-aimed.
+- **Paste guard** (`entrypoints/guards.content`): capture-phase `paste` listener on `window`, registered at
+  `document_start` so it runs before the site's own. Reads `text/plain` + `text/html`, scans with `scanText`
+  and `scanClipboardHtml` synchronously; if nothing is flagged the paste is untouched. Otherwise the event
+  is cancelled and a modal offers Paste clean (`visibleText`), Paste anyway, Show me. Re-insertion sends a
+  synthetic `ClipboardEvent("paste")` (rich editors such as ProseMirror handle it); plain textareas ignore
+  synthetic events, so it falls back to inserting at the caret.
+- **Upload guard** (`lib/intercept.ts`, `lib/replay.ts`, `entrypoints/offscreen`): capture-phase `change`
+  (file input), `drop` and `paste`-with-files listeners stop PDF uploads before the page sees them. The bytes
+  go (base64) to the background, which forwards them to an **offscreen document**. There a real pdf.js Worker
+  runs `scanPdf` and renders the pages that have flagged findings; page CSP can't interfere because this is the
+  extension's own origin. Flagged → modal with the preview, boxes from `bbox`, cards, and Upload anyway /
+  Cancel / Upload clean text (a `.txt` of `visibleText`). Nothing flagged, or any error → the original upload
+  is replayed untouched (fail open). Replays are synthetic `change`/`drop`/`paste` events built with a
+  `DataTransfer`; a module flag stops our own listeners from intercepting them.
+- **Limitations:** uploads via `showOpenFilePicker()` can't be intercepted from a content script (none of the
+  three chat sites use it). pdf.js must render with `intent: "print"` in the offscreen document because
+  `requestAnimationFrame` never fires there. Clipboard contents and files never leave the device.
+- **Stage 2 hooks:** `lib/settings.ts` (`serverUrl`, empty = local only) and `lib/remote.ts` (`RemoteLayers`
+  interface with a no-op implementation).
