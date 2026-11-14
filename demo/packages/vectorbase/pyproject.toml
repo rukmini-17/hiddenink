@@ -1,0 +1,15 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "vectorbase"
+version = "0.1.0"
+description = "DEMO / fictional vector database client for the HiddenInk demo. Not a real product."
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+authors = [{ name = "HiddenInk Demo" }]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/vectorbase"]
