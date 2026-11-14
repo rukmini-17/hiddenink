@@ -34,11 +34,9 @@ export function headline(f: Finding): string {
     : "This text is hidden from you. It does not look aimed at an AI.";
 }
 
-/** Why the scorer thinks it targets an AI, as a sentence. */
-export function whyAi(f: Finding): string {
-  if (f.reasons.length === 0) return "";
-  const list = f.reasons.map((r) => r.replace(/\.$/, "")).join("; ");
-  return `It looks aimed at an AI because it ${list}.`;
+/** Why the scorer thinks it targets an AI. The engine's reasons are already short phrases, so list them as-is. */
+export function whyAi(f: Finding): string[] {
+  return f.reasons.map((r) => r.trim().replace(/\.$/, "")).filter(Boolean);
 }
 
 export function flaggedOf<T extends { flagged: boolean }>(findings: T[]): T[] {

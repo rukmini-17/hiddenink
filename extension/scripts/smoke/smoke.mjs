@@ -118,7 +118,7 @@ try {
     document.getElementById("composer").dispatchEvent(new ClipboardEvent("paste", { bubbles: true, cancelable: true, clipboardData: dt }));
   });
   await page.waitForTimeout(400);
-  const guardText = () => page.locator("hiddenink-guard").evaluate((h) => h.shadowRoot?.textContent ?? "").catch(() => "");
+  const guardText = () => page.evaluate(() => document.querySelector("hiddenink-guard")?.shadowRoot?.textContent ?? ""); // plain evaluate: a locator would wait 30 s when the host does not exist yet
   check("paste guard modal shown", /Paste clean/.test(await guardText()));
   check("page did not see the blocked paste", !(await page.textContent("#log")).includes("paste-seen:86"));
   await page.locator("hiddenink-guard").locator("button", { hasText: "Paste clean" }).click();

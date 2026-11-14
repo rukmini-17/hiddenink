@@ -23,7 +23,16 @@ export function FindingCard({ finding, compact = false, active = false, onClick 
           <p className="mt-2 text-xs text-ink-soft">
             <span className="font-semibold">How it hides:</span> {info.how}
           </p>
-          {why && <p className="mt-1 text-xs text-ink-soft">{why}</p>}
+          {why.length > 0 && (
+            <div className="mt-1 text-xs text-ink-soft">
+              <span className="font-semibold">Why it looks aimed at an AI:</span>
+              <ul className="ml-4 list-disc">
+                {why.map((r) => (
+                  <li key={r}>{r}</li>
+                ))}
+              </ul>
+            </div>
+          )}
         </>
       )}
     </div>
