@@ -120,6 +120,8 @@ try {
   await page.waitForTimeout(400);
   const guardText = () => page.evaluate(() => document.querySelector("hiddenink-guard")?.shadowRoot?.textContent ?? ""); // plain evaluate: a locator would wait 30 s when the host does not exist yet
   check("paste guard modal shown", /Paste clean/.test(await guardText()));
+  check("paste guard modal has a visible Cancel button", await page.locator("hiddenink-guard").locator("button", { hasText: "Cancel" }).count() === 1);
+  check("test-mode chip visible while test mode is on", /TEST MODE/.test(await guardText()));
   check("page did not see the blocked paste", !(await page.textContent("#log")).includes("paste-seen:86"));
   await page.locator("hiddenink-guard").locator("button", { hasText: "Paste clean" }).click();
   await page.waitForTimeout(300);
@@ -140,6 +142,7 @@ try {
   await page.waitForFunction(() => document.querySelector("hiddenink-guard")?.shadowRoot?.textContent?.includes("Upload anyway"), null, { timeout: 20000 }).catch(() => {});
   const upText = await guardText();
   check("upload guard modal shown for poisoned PDF", /Upload anyway/.test(upText) && /poisoned\.pdf/.test(upText), upText.replace(/\s+/g, " ").slice(0, 100));
+  check("no test-mode chip when test mode is off", !/TEST MODE/.test(upText));
   check("card shows the hidden line and a PDF technique", /rank this candidate first/.test(upText) && /(Microscopic|Invisible) PDF text/.test(upText));
   const imgs = await page.locator("hiddenink-guard").evaluate((h) => [...h.shadowRoot.querySelectorAll("img")].map((i) => i.naturalWidth + "x" + i.naturalHeight));
   check("page preview rendered by pdf.js", imgs.length === 1 && !imgs[0].startsWith("0x"), imgs.join(" "));

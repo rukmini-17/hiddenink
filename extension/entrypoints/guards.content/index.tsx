@@ -1,4 +1,4 @@
-import { scanPdf } from "@hiddenink/core";
+import { scanPdf, type ScanResult } from "@hiddenink/core";
 import { defineContentScript } from "wxt/utils/define-content-script";
 import "@/assets/ui.css";
 import { CHATBOT_MATCHES, MAX_PDF_BYTES } from "@/lib/config";
@@ -48,6 +48,7 @@ export default defineContentScript({
               paste.replayOriginal();
             }}
             onCancel={close}
+            testMode={settings.current.testMode}
           />,
         );
       },
@@ -59,39 +60,50 @@ export default defineContentScript({
 
     async function onPdfUpload(upload: UploadIntercept) {
       await settings.ready;
-      const pdfs = upload.files.filter(isPdf);
+      const testMode = settings.current.testMode;
       // Fail open on anything unexpected: HiddenInk must never eat a user's upload.
       try {
-        for (const pdf of pdfs) {
+        // Scan every PDF in the upload first (not just up to the first flagged one).
+        const scanned: { pdf: File; bytes: ArrayBuffer; result: ScanResult }[] = [];
+        for (const pdf of upload.files.filter(isPdf)) {
           if (pdf.size > MAX_PDF_BYTES) continue;
           const bytes = await pdf.arrayBuffer();
           let result = await scanPdf(bytes); // core copies the buffer, so `bytes` stays usable for previews
-          if (settings.current.testMode && !hasFlagged(result)) result = fakePdfResult(2);
-          if (!hasFlagged(result)) continue;
-          const previews = await renderPreviews(bytes, flaggedOf(result.findings));
-
-          await host.render(
-            <UploadGuardModal
-              fileName={pdf.name}
-              result={result}
-              previews={previews}
-              onUploadAnyway={() => {
-                close();
-                upload.replay(upload.files);
-              }}
-              onUploadClean={() => {
-                close();
-                upload.replay(upload.files.map((f) => (f === pdf ? cleanTextFile(pdf.name, result.visibleText) : f)));
-              }}
-              onCancel={close}
-            />,
-          );
-          return; // the user decides; replay happens from the modal
+          if (testMode && !hasFlagged(result)) result = fakePdfResult(2);
+          scanned.push({ pdf, bytes, result });
         }
+        const flaggedPdfs = scanned.filter((s) => hasFlagged(s.result));
+        if (flaggedPdfs.length === 0) {
+          upload.replay(upload.files);
+          return;
+        }
+
+        // One modal: preview the first flagged PDF, but the buttons act on the whole upload.
+        const first = flaggedPdfs[0];
+        const previews = await renderPreviews(first.bytes, flaggedOf(first.result.findings));
+        const cleanFor = (f: File) => flaggedPdfs.find((s) => s.pdf === f);
+        await host.render(
+          <UploadGuardModal
+            fileName={first.pdf.name}
+            result={first.result}
+            previews={previews}
+            otherFlagged={flaggedPdfs.length - 1}
+            testMode={testMode}
+            onUploadAnyway={() => {
+              close();
+              upload.replay(upload.files);
+            }}
+            onUploadClean={() => {
+              close();
+              upload.replay(upload.files.map((f) => { const s = cleanFor(f); return s ? cleanTextFile(f.name, s.result.visibleText) : f; }));
+            }}
+            onCancel={close}
+          />,
+        );
       } catch (err) {
         console.warn("[HiddenInk] PDF scan failed, letting the upload through", err);
+        upload.replay(upload.files);
       }
-      upload.replay(upload.files);
     }
   },
 });

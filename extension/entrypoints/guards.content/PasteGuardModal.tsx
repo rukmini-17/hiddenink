@@ -4,13 +4,14 @@ import { FindingCard } from "@/components/FindingCard";
 import { Modal, btn } from "@/components/Modal";
 import { countLabel, flaggedOf } from "@/lib/explain";
 
-export function PasteGuardModal({ result, onPasteClean, onPasteAnyway, onCancel }: { result: ScanResult; onPasteClean: () => void; onPasteAnyway: () => void; onCancel: () => void }) {
+export function PasteGuardModal({ result, onPasteClean, onPasteAnyway, onCancel, testMode = false }: { result: ScanResult; onPasteClean: () => void; onPasteAnyway: () => void; onCancel: () => void; testMode?: boolean }) {
   const [showMe, setShowMe] = useState(false);
   const flagged = flaggedOf(result.findings);
   return (
-    <Modal title="This paste contains hidden instructions" onClose={onCancel} footer={
+    <Modal title="This paste contains hidden instructions" onClose={onCancel} testMode={testMode} footer={
       <>
         <button className={btn.quiet} onClick={() => setShowMe((v) => !v)}>{showMe ? "Hide details" : "Show me"}</button>
+        <button className={btn.quiet} onClick={onCancel}>Cancel</button>
         <button className={btn.secondary} onClick={onPasteAnyway}>Paste anyway</button>
         <button className={btn.primary} onClick={onPasteClean}>Paste clean</button>
       </>

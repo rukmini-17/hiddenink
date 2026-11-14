@@ -31,11 +31,15 @@ findings. It existed so the UI could be tried before the engine was ready. With 
 or clean files will show warnings.
 
 Check: click Inky → if a small "test mode" chip shows at the bottom of the popup, it's on. Click **Settings**
-(link in the popup), untick **Test mode**, **Save**.
+(link in the popup), untick **Test mode**, **Save**. As a second safety net, every guard modal shows a bold
+**TEST MODE** badge in its header while the setting is on, so a faked finding can't pass for a real one.
+It's a Chrome *synced* setting: check it on the demo laptop, not just your own.
 
 ## 3. X-ray on the poisoned job listing
 
-1. Drag `corpus/demo/job_listing_poisoned.html` into a Chrome tab.
+1. Serve the demo folder over localhost (Docker): `extension/scripts/serve-demo.sh`, then open
+   <http://localhost:8787/job_listing_poisoned.html>. (Opening the file directly also works, but only with
+   "Allow access to file URLs" turned on; without it X-ray silently finds nothing.)
 2. Click Inky → **Turn X-ray on**.
 3. Expect: the page dims, glowing boxes sit over the hidden text, the side panel lists 6 findings with technique,
    score and (for Unicode) the decoded text, the toolbar icon shows a "6" badge. Hover a glow for the card; click a
@@ -49,7 +53,8 @@ The guard only reacts to pastes that carry hidden text. Normal pastes go through
 
 1. On the job-listing tab (X-ray **off**), click into the page, **Cmd + A**, **Cmd + C**.
 2. Go to chatgpt.com, click the composer, **Cmd + V**.
-   Expect the modal "This paste contains hidden instructions". Click **Show me** to see the hidden snippets.
+   Expect the modal "This paste contains hidden instructions" with Show me / Cancel / Paste anyway / Paste clean.
+   Click **Show me** to see the hidden snippets.
 3. Click **Paste clean**. Expect only the visible text of the listing to appear in the composer.
 4. Repeat 1–2 and click **Paste anyway**. Expect the full original paste.
 5. Control: type a sentence in Notes, copy it, paste into the composer. Expect **no modal**, the text just appears.
@@ -65,6 +70,8 @@ The guard only reacts to pastes that carry hidden text. Normal pastes go through
 6. Control: attach `corpus/demo/resume_clean.pdf` → no modal, it attaches directly. Same for the four
    `resume_<n>_*.pdf` files.
 7. Control: attach a PNG → no modal.
+8. Demo with **one file at a time**. Several PDFs at once are all scanned, but only the first flagged one is
+   previewed (the modal says how many more were flagged; "Upload clean text" cleans all of them).
 
 ## 6. N0 report: fill in per site
 

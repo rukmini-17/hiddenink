@@ -31,6 +31,8 @@ Then in Chrome: `chrome://extensions` → **Developer mode** → **Load unpacked
 (the folder is hidden in Finder; press Cmd+Shift+. in the file picker). Turn on "Allow access to file URLs" in the
 extension's details to use X-ray on local demo files.
 
+To use X-ray on the demo page, serve it: `extension/scripts/serve-demo.sh` → <http://localhost:8787/job_listing_poisoned.html>.
+
 Walkthrough of the demo and what to expect: `extension/docs/DEMO-RUNBOOK.md`. Build details: `extension/README.md`.
 
 ## Regenerate the test files

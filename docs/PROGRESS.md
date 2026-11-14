@@ -77,3 +77,8 @@ Append-only. Write 2–4 lines under your own heading after each task.
   under "Why it looks aimed at an AI", `extension/docs/DEMO-RUNBOOK.md` is the demo walkthrough, and the root
   `README.md` now covers install / regenerate / eval / tests (it references `eval/run_local.py` from the brief;
   adjust when R6 lands). **Still pending on real sites:** the N0 table (chatgpt.com / claude.ai / gemini) in the runbook.
+- **Demo hardening from Rukmini's review (2026-11-14):** paste guard modal has a visible **Cancel** button; every guard
+  modal shows a **TEST MODE** badge while the setting is on; several PDFs in one upload are all scanned (first flagged
+  one previewed, "Upload clean text" cleans all flagged); `extension/scripts/serve-demo.sh` serves `corpus/demo` on
+  localhost:8787 so X-ray needs no file-URL permission. Root README was already written (see previous entry), Rukmini:
+  no need to redo it. Headless smoke extended (37 checks). Real-site N0/N6 table still to be filled in by hand.

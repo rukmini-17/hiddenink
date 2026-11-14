@@ -2,7 +2,7 @@ import { useEffect, type ReactNode } from "react";
 import { Inky, type InkyMood } from "./Inky";
 
 // Calm, warm modal used by the paste guard and upload guard. Rendered inside our Shadow DOM.
-export function Modal({ title, mood = "alert", children, footer, onClose, wide = false }: { title: string; mood?: InkyMood; children: ReactNode; footer: ReactNode; onClose: () => void; wide?: boolean }) {
+export function Modal({ title, mood = "alert", children, footer, onClose, wide = false, testMode = false }: { title: string; mood?: InkyMood; children: ReactNode; footer: ReactNode; onClose: () => void; wide?: boolean; testMode?: boolean }) {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
     window.addEventListener("keydown", onKey, true);
@@ -14,10 +14,15 @@ export function Modal({ title, mood = "alert", children, footer, onClose, wide =
       <div role="dialog" aria-modal="true" className={`flex max-h-[90vh] w-full flex-col overflow-hidden rounded-2xl bg-paper shadow-card ${wide ? "max-w-3xl" : "max-w-lg"}`}>
         <header className="flex items-center gap-3 border-b border-paper-deep px-5 py-4">
           <Inky size={44} mood={mood} />
-          <div>
+          <div className="flex-1">
             <div className="text-xs font-semibold uppercase tracking-wide text-amber">HiddenInk</div>
             <h1 className="text-base font-semibold text-ink">{title}</h1>
           </div>
+          {testMode && (
+            <span title="Test mode is on in HiddenInk settings: these are sample findings, not real ones." className="rounded-full bg-amber px-2 py-0.5 text-xs font-bold text-ink">
+              TEST MODE
+            </span>
+          )}
         </header>
         <div className="overflow-y-auto px-5 py-4">{children}</div>
         <footer className="flex flex-wrap items-center justify-end gap-2 border-t border-paper-deep bg-paper-deep/60 px-5 py-3">{footer}</footer>

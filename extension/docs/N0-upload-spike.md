@@ -23,7 +23,7 @@ file through or hand the site a different file. Code: `lib/intercept.ts` (pause)
 
 ## Manual checklist (fill in the result column)
 
-Turn on **Test mode** in settings so every PDF triggers the modal.
+Use the real demo files (`corpus/demo/resume_poisoned.pdf`, `job_listing_poisoned.html`) with **Test mode off**.
 
 | # | Site | Action | Expected | Result |
 |---|---|---|---|---|
@@ -35,7 +35,8 @@ Turn on **Test mode** in settings so every PDF triggers the modal.
 | 6 | chatgpt.com | Pick a PNG | Not intercepted; attaches normally | |
 | 7 | claude.ai | Repeat 1–6 | | |
 | 8 | gemini.google.com | Repeat 1–6 | | |
-| 9 | any | Paste 40+ chars of text | Paste guard; "Paste clean" inserts text into the composer | |
+| 9 | any | Paste the job listing (Cmd+A, Cmd+C on the page) | Paste guard; "Paste clean" inserts only the visible text into the composer | |
+| 10 | any | Paste guard → Cancel | Modal closes, nothing pasted | |
 
 If 2, 3 or 5 fail on a site that matters for the demo: set `UPLOAD_REPLAY_SUPPORTED = false`
 (fallback "Cancel + show findings") and write the failure down in `docs/PROGRESS.md`.
