@@ -19,3 +19,7 @@ __pycache__/
 # vitest browser-mode failure screenshots
 __screenshots__/
 eval/results/*.tmp
+
+# demo build artifacts (regenerate with demo/build_index.py)
+demo/index/
+demo/packages/*/dist/
