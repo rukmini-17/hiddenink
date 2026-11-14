@@ -30,5 +30,9 @@ Append-only. Write 2–4 lines under your own heading after each task.
   payload caught; subtle ones mostly missed by the keyword scorer (expected; R6 will measure it).
 - **Fix** (branch `rukmini/fix-cleantext-nul`): `cleanText` (so every `visibleText`) now strips control characters
   (e.g. the U+0000 that PDF subset fonts produce) and normalizes line breaks to `\n`. Only tab and newline remain.
+- **R6 done** (branch `rukmini/r6-eval`): `pnpm eval` runs the local eval and writes the **rules-only baseline**
+  to `eval/results/` (`summary_local.md` is ready to paste into slides). Baseline: 34/58 attacks detected (obvious
+  33/33, subtle 1/25), hidden text found in 54/58, **0/21 benign and 0/2 keyword-stuffing flagged**; ~0.5 ms per HTML
+  file, ~15 ms per PDF. How to run and what each number means: `docs/EVAL.md`.
 
 ## Nisha

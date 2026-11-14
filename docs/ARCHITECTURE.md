@@ -210,3 +210,12 @@ official numbers): **0 / 21 benign files flagged**, both keyword-stuffing files 
 them the hidden text *is* found (unflagged finding), but the keyword scorer gives it < 0.5; the subtle
 alt text, aria-label, sr-only and comment payloads aren't reported at all, because those sources only report
 AI-aimed text. That's the case for a learned classifier (Stage 2's `/score`).
+
+## Local eval (R6): `eval/`
+
+`pnpm eval` scans every corpus file in headless Chrome through the core IIFE bundle and compares
+the findings with `corpus/manifest.json`. Code: `run_local.py` (CLI), `hiddenink_eval/runner.py`
+(Playwright: HTML via `file://`, PDFs via a harness page; timing inside the page around the scan
+call), `metrics.py` (pure functions; tested in `eval/tests/`), `report.py` (CSV / JSON / markdown).
+Outputs are the **rules-only baseline** (`eval/results/*_local.*`), and a Stage 2 run can sit next to them.
+Metric definitions, results and caveats are in **[docs/EVAL.md](EVAL.md)**.
