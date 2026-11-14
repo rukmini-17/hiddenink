@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
-import { Inky } from "@/components/Inky";
-import { btn } from "@/components/Modal";
+import { Logo } from "@/components/Logo";
 import { getSettings, serverUrlItem, testModeItem } from "@/lib/settings";
 
 // Settings page: server URL (Stage 2 hook) and test mode.
@@ -23,41 +22,47 @@ export function App() {
   }
 
   return (
-    <main className="hi-root mx-auto max-w-lg p-8">
-      <header className="mb-6 flex items-center gap-3">
-        <Inky size={56} />
+    <main className="mx-auto max-w-lg p-8">
+      <header className="mb-8 flex items-center gap-3">
+        <Logo size={40} />
         <div>
-          <div className="text-xs font-semibold uppercase tracking-wide text-amber">HiddenInk</div>
-          <h1 className="text-lg font-semibold">Settings</h1>
+          <div className="text-xs font-medium text-hi-faint">HiddenInk</div>
+          <h1 className="text-[22px] leading-7 text-hi-fg">Settings</h1>
         </div>
       </header>
 
       <section className="mb-6">
-        <label className="block text-sm font-semibold" htmlFor="serverUrl">
+        <label className="block text-sm font-medium text-hi-fg" htmlFor="serverUrl">
           Server URL
         </label>
-        <p className="mb-2 text-xs text-ink-soft">Leave empty to run fully on your device. A server adds deeper scans (coming in Stage 2).</p>
-        <input id="serverUrl" value={serverUrl} onChange={(e) => setServerUrl(e.target.value)} placeholder="https://…" className="w-full rounded-lg border border-ink/20 bg-white px-3 py-2 text-sm" />
+        <p className="mb-2 text-xs text-hi-muted">Leave empty to run fully on your device. A server adds deeper scans (coming in Stage 2).</p>
+        <input
+          id="serverUrl"
+          value={serverUrl}
+          onChange={(e) => setServerUrl(e.target.value)}
+          placeholder="https://…"
+          className="h-10 w-full rounded-lg border border-hi-border bg-hi-bg px-3 text-sm text-hi-fg outline-none focus:border-hi-primary"
+        />
       </section>
 
-      <section className="mb-6">
-        <label className="flex items-start gap-2 text-sm">
-          <input type="checkbox" checked={testMode} onChange={(e) => setTestMode(e.target.checked)} className="mt-1" />
+      <section className="mb-8">
+        <label className="flex items-start gap-3 text-sm">
+          <input type="checkbox" checked={testMode} onChange={(e) => setTestMode(e.target.checked)} className="mt-1 accent-[var(--hi-primary)]" />
           <span>
-            <span className="font-semibold">Test mode</span>
+            <span className="font-medium text-hi-fg">Test mode</span>
             <br />
-            <span className="text-xs text-ink-soft">Shows sample findings for every PDF upload, long paste and X-ray scan, so the flow can be tried before the detection engine finds anything. Turn off for real use.</span>
+            <span className="text-xs text-hi-muted">Shows sample findings for every PDF upload, long paste and X-ray scan, so the flow can be tried before the detection engine finds anything. Turn off for real use.</span>
           </span>
         </label>
       </section>
 
       <div className="flex items-center gap-3">
-        <button className={btn.primary} onClick={save}>
+        <button className="hi-btn-filled h-10 px-6" onClick={save}>
           Save
         </button>
-        {saved && <span className="text-sm text-teal">Saved</span>}
+        {saved && <span className="text-sm text-hi-muted">Saved</span>}
       </div>
-      <p className="mt-8 text-xs text-ink-faint">HiddenInk never stores or sends what you paste or upload. Everything is scanned on your device.</p>
+      <p className="mt-10 text-xs text-hi-faint">HiddenInk never stores or sends what you paste or upload. Everything is scanned on your device.</p>
     </main>
   );
 }

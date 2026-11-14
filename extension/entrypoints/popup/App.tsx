@@ -1,18 +1,22 @@
 import { useEffect, useState } from "react";
 import { browser } from "wxt/browser";
-import { Inky } from "@/components/Inky";
-import { btn } from "@/components/Modal";
-import { countLabel } from "@/lib/explain";
+import { Logo } from "@/components/Logo";
 import { sendToTab, type XrayStatus } from "@/lib/messages";
 import { testModeItem } from "@/lib/settings";
 
-// Popup: X-ray toggle, finding count for the current tab, link to settings, and Inky.
+// Popup: X-ray switch for the current tab, what it found, and a link to settings.
 
 type State = { kind: "loading" } | { kind: "unsupported" } | { kind: "ready"; status: XrayStatus };
 
 async function activeTabId(): Promise<number | undefined> {
   const [tab] = await browser.tabs.query({ active: true, currentWindow: true });
   return tab?.id;
+}
+
+function statusLine(s: XrayStatus): string {
+  if (!s.on) return "Shows text that is hidden on this page";
+  if (s.flagged === 0) return "No hidden instructions on this page";
+  return `${s.flagged} hidden item${s.flagged === 1 ? "" : "s"} on this page`;
 }
 
 export function App() {
@@ -36,47 +40,46 @@ export function App() {
   }
 
   const status = state.kind === "ready" ? state.status : null;
-  const mood = status?.on ? (status.flagged > 0 ? "alert" : "happy") : "calm";
 
   return (
-    <main className="hi-root w-72 p-4">
-      <header className="mb-3 flex items-center gap-3">
-        <Inky size={48} mood={mood} />
+    <main className="w-80 p-4">
+      <header className="mb-4 flex items-center gap-3">
+        <Logo size={32} />
         <div>
-          <div className="text-xs font-semibold uppercase tracking-wide text-amber">HiddenInk</div>
-          <h1 className="text-sm font-semibold">What your AI reads, made visible</h1>
+          <h1 className="text-base font-medium text-hi-fg">HiddenInk</h1>
+          <p className="text-xs text-hi-muted">Text hidden in pages and PDFs, made visible</p>
         </div>
       </header>
 
-      {state.kind === "unsupported" && <p className="text-sm text-ink-soft">HiddenInk can’t scan this page. Try a regular website.</p>}
-      {state.kind === "loading" && <p className="text-sm text-ink-soft">Checking this page…</p>}
+      {state.kind === "unsupported" && <p className="rounded-xl bg-hi-quote px-3 py-3 text-sm text-hi-muted">HiddenInk can’t scan this page. Try a regular website.</p>}
+      {state.kind === "loading" && <p className="px-1 text-sm text-hi-muted">Checking this page…</p>}
 
       {status && (
-        <>
-          <p className="mb-3 text-sm">
-            {status.on ? (
-              status.flagged > 0 ? (
-                <>
-                  <span className="font-semibold">{countLabel(status.flagged)}</span> on this page.
-                </>
-              ) : (
-                <>Nothing hidden from you here. {status.total > 0 && <span className="text-ink-faint">({status.total} hidden but harmless)</span>}</>
-              )
-            ) : (
-              "X-ray is off. Turn it on to see text hidden from you."
-            )}
-          </p>
-          <button className={`${btn.primary} w-full`} onClick={() => ask("xray:toggle")}>
-            {status.on ? "Turn X-ray off" : "Turn X-ray on"}
+        <div className="flex items-center gap-3 rounded-xl bg-hi-quote px-3 py-3">
+          <div className="flex-1">
+            <div className="text-sm font-medium text-hi-fg">X-ray this page</div>
+            <div className="text-xs text-hi-muted">{statusLine(status)}</div>
+          </div>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={status.on}
+            aria-label={status.on ? "Turn X-ray off" : "Turn X-ray on"}
+            onClick={() => ask("xray:toggle")}
+            className={`relative h-6 w-11 shrink-0 rounded-full transition-colors ${status.on ? "bg-hi-primary" : "bg-hi-faint/60"}`}
+          >
+            <span className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-all ${status.on ? "left-[22px]" : "left-0.5"}`} />
           </button>
-        </>
+        </div>
       )}
 
-      <footer className="mt-4 flex items-center justify-between text-xs text-ink-faint">
-        <button className="underline hover:text-ink" onClick={() => browser.runtime.openOptionsPage()}>
+      <p className="mt-3 px-1 text-xs text-hi-muted">Paste and upload checks are always on for ChatGPT, Claude and Gemini.</p>
+
+      <footer className="mt-3 flex items-center justify-between">
+        <button className="hi-btn-text -ml-3" onClick={() => browser.runtime.openOptionsPage()}>
           Settings
         </button>
-        {testMode && <span className="rounded-full bg-amber-soft px-2 py-0.5 font-semibold text-ink">test mode</span>}
+        {testMode && <span className="rounded-full bg-violet/20 px-2 py-0.5 text-xs font-medium text-violet">Test mode on</span>}
       </footer>
     </main>
   );

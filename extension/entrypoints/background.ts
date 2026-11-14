@@ -9,7 +9,8 @@ export default defineBackground(() => {
   browser.runtime.onMessage.addListener((raw, sender) => {
     const msg = raw as Message;
     if (msg?.type === "xray:count" && sender.tab?.id != null) {
-      void browser.action.setBadgeBackgroundColor({ color: "#e8a33d" });
+      void browser.action.setBadgeBackgroundColor({ color: "#5FE6D4" });
+      void browser.action.setBadgeTextColor?.({ color: "#0B1226" });
       void browser.action.setBadgeText({ tabId: sender.tab.id, text: msg.flagged ? String(msg.flagged) : "" });
     }
   });
