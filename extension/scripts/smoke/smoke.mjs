@@ -65,8 +65,8 @@ try {
   check("real engine flagged the white-on-white paragraph (not test-mode fakes)", status?.flagged === 1 && status?.total >= 1, JSON.stringify(status));
   await page.waitForTimeout(300);
   const xrayText = await page.locator("hiddenink-xray").evaluate((h) => h.shadowRoot?.textContent ?? "");
-  check("xray panel rendered with count", /1 hidden instruction on this page/.test(xrayText), xrayText.replace(/\s+/g, " ").slice(-160));
-  check("card explains the technique and the AI reasons", /Invisible color/.test(xrayText) && /AI-aimed/.test(xrayText));
+  check("top bar shows the count", /X-ray on/.test(xrayText) && /1 hidden item\b/.test(xrayText), xrayText.replace(/\s+/g, " ").slice(0, 160));
+  check("no side panel or card opens by itself", !/There is hidden text here/.test(xrayText));
   const revealCount = await page.locator("hiddenink-xray").evaluate((h) => h.shadowRoot.querySelectorAll(".hi-reveal").length);
   check("xray draws the hidden text in a reveal layer", revealCount === 1, `reveals=${revealCount}`);
   const dim = await page.locator("hiddenink-xray").evaluate((h) => getComputedStyle(h.shadowRoot.querySelector(".hi-dim")).backdropFilter);
@@ -87,7 +87,15 @@ try {
   check("revealed text follows the page when scrolling", Math.abs(d1.dx) <= 2 && Math.abs(d1.dy) <= 2 && d1.scrollY > 2000 && d1.elTop < 800, JSON.stringify(d1));
   await page.evaluate(() => window.scrollTo(0, 0));
   await page.waitForTimeout(250);
-  const off = await sw.evaluate(async () => { const [tab] = await chrome.tabs.query({ active: true }); return chrome.tabs.sendMessage(tab.id, { type: "xray:toggle" }); });
+  // Clicking the revealed line opens its card; no percentages anywhere.
+  await page.locator("hiddenink-xray").locator(".hi-reveal").click();
+  await page.waitForTimeout(200);
+  const cardText = await page.locator("hiddenink-xray").evaluate((h) => h.shadowRoot?.textContent ?? "");
+  check("click card explains the hidden line", /There is hidden text here/.test(cardText) && /same color as its background/.test(cardText) && /(High|Medium)/.test(cardText) && /View all 1/.test(cardText), cardText.replace(/\s+/g, " ").slice(0, 200));
+  check("no AI percentage shown", !/%/.test(cardText));
+  await page.keyboard.press("Escape");
+  await page.evaluate(() => window.scrollTo(0, 0));
+async () => { const [tab] = await chrome.tabs.query({ active: true }); return chrome.tabs.sendMessage(tab.id, { type: "xray:toggle" }); });
   check("xray turns off", off?.on === false);
 
   // --- Paste guard (real scanner: Unicode tag payload, too short for test-mode fakes) ------------

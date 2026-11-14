@@ -1,17 +1,24 @@
 import type { Finding } from "@hiddenink/core";
-import { useLayoutEffect, useMemo, useRef, useState } from "react";
-import { FindingCard } from "@/components/FindingCard";
-import { Logo } from "@/components/Logo";
-import { btn } from "@/components/Modal";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { XRAY_PLAIN_DIM_HOSTS } from "@/lib/config";
-import { countLabel, flaggedOf, whatItSays } from "@/lib/explain";
+import { flaggedOf, whatItSays } from "@/lib/explain";
+import { AllList } from "./AllList";
+import { HiddenTextCard } from "./HiddenTextCard";
 import { place, type Placed } from "./placement";
+import { TopBar } from "./TopBar";
 
 // X-ray: a dim layer that recolours the page behind it, and a separate layer that draws a glowing
 // copy of each hidden line where the real text sits. The page itself is never edited.
+// Nothing opens on its own: a small top bar shows the count, clicking a line opens its card,
+// and "View all" lists everything (including lines that can't be drawn in place).
 //
-// The reveal layer is positioned so its origin is the document's top-left, then scrolls with the page
-// like normal content. No scroll listeners: document coordinates from `core` are used as-is.
+// The reveal layer's origin is the document's top-left and it scrolls with the page like normal
+// content, so document coordinates from `core` are used as-is with no scroll listeners.
+
+const CARD_W = 380;
+const GAP = 16;
+
+type Open = { kind: "card"; id: string; at?: { left: number; top: number } } | { kind: "list" } | null;
 
 /**
  * Offset that moves an absolutely positioned box inside our shadow host to the document origin.
@@ -27,22 +34,68 @@ function useDocumentOrigin(probe: React.RefObject<HTMLDivElement>, deps: unknown
   return origin;
 }
 
+/** Card position in document px: beside the line if it fits, otherwise under it at the right edge of the window. */
+function cardPosition(p: Placed, lineHeight: number): { left: number; top: number } {
+  const viewLeft = window.scrollX + GAP;
+  const viewRight = window.scrollX + window.innerWidth - GAP;
+  const right = p.rect.x + p.width + GAP;
+  if (right + CARD_W <= viewRight) return { left: right, top: p.rect.y - 8 };
+  const left = p.rect.x - GAP - CARD_W;
+  if (left >= viewLeft) return { left, top: p.rect.y - 8 };
+  return { left: Math.max(viewLeft, viewRight - CARD_W), top: p.rect.y + lineHeight + 10 };
+}
+
 export function XrayOverlay({ findings, onClose }: { findings: Finding[]; onClose: () => void }) {
   const flagged = useMemo(() => flaggedOf(findings), [findings]);
   const placed = useMemo(() => flagged.flatMap((f) => place(f) ?? []), [flagged]);
-  const unplaced = useMemo(() => { const ids = new Set(placed.map((p) => p.finding.id)); return flagged.filter((f) => !ids.has(f.id)); }, [flagged, placed]);
+  const placedIds = useMemo(() => new Set(placed.map((p) => p.finding.id)), [placed]);
 
   const probeRef = useRef<HTMLDivElement>(null);
   const origin = useDocumentOrigin(probeRef, [findings]);
+  const cardRef = useRef<HTMLDivElement>(null);
+  const listRef = useRef<HTMLDivElement>(null);
+  const lineRefs = useRef(new Map<string, HTMLDivElement>());
 
-  const [active, setActive] = useState<string | null>(null);
-  const [hover, setHover] = useState<Placed | null>(null);
+  const [open, setOpen] = useState<Open>(null);
   const plainDim = XRAY_PLAIN_DIM_HOSTS.includes(location.hostname);
 
-  function focus(p: Placed) {
-    setActive(p.finding.id);
-    window.scrollTo({ top: Math.max(0, p.rect.y + p.rect.h / 2 - window.innerHeight / 2), behavior: "smooth" });
+  // A new scan (resize) invalidates whatever was open.
+  useEffect(() => setOpen(null), [findings]);
+
+  // Escape or a click elsewhere closes the card or list (X-ray stays on).
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(null);
+    const onDown = (e: MouseEvent) => {
+      const path = e.composedPath();
+      const inside = [cardRef.current, listRef.current, ...lineRefs.current.values()].some((el) => el && path.includes(el));
+      if (!inside) setOpen(null);
+    };
+    window.addEventListener("keydown", onKey, true);
+    window.addEventListener("mousedown", onDown, true);
+    return () => {
+      window.removeEventListener("keydown", onKey, true);
+      window.removeEventListener("mousedown", onDown, true);
+    };
+  }, [open]);
+
+  function openCard(f: Finding) {
+    const p = placed.find((x) => x.finding.id === f.id);
+    if (!p) return setOpen({ kind: "card", id: f.id }); // not on the page: card floats under the top bar
+    const h = lineRefs.current.get(f.id)?.offsetHeight ?? 22;
+    setOpen({ kind: "card", id: f.id, at: cardPosition(p, h) });
   }
+
+  function pickFromList(f: Finding) {
+    const p = placed.find((x) => x.finding.id === f.id);
+    if (p) {
+      window.scrollTo({ top: Math.max(0, p.rect.y - window.innerHeight / 3), behavior: "instant" as ScrollBehavior });
+    }
+    openCard(f);
+  }
+
+  const cardFinding = open?.kind === "card" ? flagged.find((f) => f.id === open.id) : undefined;
+  const activeId = open?.kind === "card" ? open.id : null;
 
   return (
     <div className="hi-root hi-dark">
@@ -54,55 +107,38 @@ export function XrayOverlay({ findings, onClose }: { findings: Finding[]; onClos
         {placed.map((p) => (
           <div
             key={p.finding.id}
+            ref={(el) => {
+              if (el) lineRefs.current.set(p.finding.id, el);
+              else lineRefs.current.delete(p.finding.id);
+            }}
             className="hi-reveal"
+            role="button"
+            tabIndex={0}
             data-hiddenink-id={p.finding.id}
-            data-active={active === p.finding.id}
+            data-active={activeId === p.finding.id}
             style={{ left: p.rect.x, top: p.rect.y, width: p.width }}
-            onMouseEnter={() => setHover(p)}
-            onMouseLeave={() => setHover(null)}
-            onClick={() => setActive(p.finding.id)}
+            onClick={() => openCard(p.finding)}
+            onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && openCard(p.finding)}
           >
             {whatItSays(p.finding, 400)}
           </div>
         ))}
-        {hover && (
-          <div className="pointer-events-none absolute z-20 w-80" style={{ left: hover.rect.x, top: hover.rect.y + Math.max(hover.rect.h, 22) + 10 }}>
-            <FindingCard finding={hover.finding} />
-          </div>
+        {cardFinding && open?.kind === "card" && open.at && (
+          <HiddenTextCard ref={cardRef} finding={cardFinding} onPage total={flagged.length} onViewAll={() => setOpen({ kind: "list" })} className="absolute z-20" style={{ left: open.at.left, top: open.at.top }} />
         )}
       </div>
 
-      {/* Side panel (replaced by the click card and top bar in the next step). */}
-      <aside className="fixed bottom-4 right-4 top-4 z-30 flex w-[340px] flex-col overflow-hidden rounded-2xl bg-paper text-ink shadow-card">
-        <header className="flex items-center gap-3 border-b border-paper-deep px-4 py-3">
-          <Logo size={32} />
-          <div className="flex-1">
-            <div className="text-xs font-semibold uppercase tracking-wide text-amber">X-ray</div>
-            <div className="text-sm font-semibold">{flagged.length ? `${countLabel(flagged.length)} on this page` : "Nothing hidden from you here"}</div>
-          </div>
-          <button className={btn.quiet} onClick={onClose} aria-label="Close X-ray">
-            ✕
-          </button>
-        </header>
-        <div className="flex-1 space-y-2 overflow-y-auto px-4 py-3">
-          {flagged.length === 0 && (
-            <p className="text-sm text-ink-soft">
-              The page you see and the page an AI reads look the same. {findings.length > 0 && `${findings.length} hidden snippets were found, but none looks aimed at an AI.`}
-            </p>
-          )}
-          {placed.map((p) => (
-            <FindingCard key={p.finding.id} finding={p.finding} compact active={active === p.finding.id} onClick={() => focus(p)} />
-          ))}
-          {unplaced.length > 0 && (
-            <>
-              <div className="pt-2 text-xs font-semibold uppercase tracking-wide text-ink-faint">Not placeable on screen</div>
-              {unplaced.map((f) => (
-                <FindingCard key={f.id} finding={f} active={active === f.id} onClick={() => setActive(f.id)} />
-              ))}
-            </>
-          )}
+      {cardFinding && open?.kind === "card" && !open.at && (
+        <HiddenTextCard ref={cardRef} finding={cardFinding} onPage={false} total={flagged.length} onViewAll={() => setOpen({ kind: "list" })} className="fixed right-4 top-16 z-40" />
+      )}
+
+      <TopBar count={flagged.length} onViewAll={() => setOpen({ kind: "list" })} onClose={onClose} />
+
+      {open?.kind === "list" && (
+        <div ref={listRef}>
+          <AllList findings={flagged} placedIds={placedIds} onPick={pickFromList} onClose={() => setOpen(null)} />
         </div>
-      </aside>
+      )}
     </div>
   );
 }

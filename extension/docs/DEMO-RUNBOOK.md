@@ -49,7 +49,7 @@ The result is in `extension/.output/chrome-mv3/`. That folder starts with a dot,
    ```
    /Users/nishasuresh/Documents/Masters/HackUMass/codebase/hiddenink/extension/.output/chrome-mv3
    ```
-5. [ ] Click the puzzle-piece icon in Chrome's toolbar and pin **HiddenInk**. You should now see Inky (the ink drop) in the toolbar.
+5. [ ] Click the puzzle-piece icon in Chrome's toolbar and pin **HiddenInk**. You should now see its icon (a shield with an eye) in the toolbar.
 
 **Every time after a rebuild:**
 
@@ -62,8 +62,8 @@ The result is in `extension/.output/chrome-mv3/`. That folder starts with a dot,
 
 Test mode is our own setting that shows **fake** warnings on everything. It's only for development. If it's on during the demo, a clean résumé will show a warning and look like a false alarm.
 
-1. [ ] Click Inky in the toolbar.
-2. [ ] Look at the bottom of the popup. If you see a small **"test mode"** label, it's on.
+1. [ ] Click the HiddenInk icon in the toolbar.
+2. [ ] Look at the bottom of the popup. If you see a small **"Test mode on"** label, it's on.
 3. [ ] If it's on: click **Settings** in the popup, untick **Test mode**, click **Save**.
 
 Safety net: while Test mode is on, every HiddenInk warning box shows a bold **TEST MODE** badge at the top. If you ever see that badge, stop and turn it off.
@@ -79,26 +79,30 @@ Test mode is synced to your Google account, so check it on whichever laptop you 
    extension/scripts/serve-demo.sh
    ```
 2. [ ] In Chrome, open <http://localhost:8787/job_listing_poisoned.html>.
-3. [ ] Click Inky, then **Turn X-ray on**.
+3. [ ] Click the HiddenInk icon (the shield with an eye) in the toolbar and switch **X-ray this page** on.
 
 You should see:
 
-- [ ] The page goes darker.
-- [ ] Glowing orange boxes appear over spots where text is hidden.
-- [ ] A panel on the right says **"6 hidden instructions on this page"** and lists them.
-- [ ] Inky in the toolbar shows a small **6**.
+- [ ] The page goes dark. Normal text stays readable but muted.
+- [ ] The hidden lines appear in glowing teal text where they sit on the page. No boxes, no tags.
+- [ ] A small bar at the top says **"X-ray on"** with the number of hidden items.
+- [ ] Nothing else opens by itself.
+- [ ] The toolbar icon shows the same number in a small teal badge.
 
 Try it out:
 
-4. [ ] Hover over a glowing box. A card pops up showing what the hidden text says and why it looks aimed at an AI.
-5. [ ] Click a card in the right panel. The page scrolls to that spot.
-6. [ ] Scroll the page up and down. The boxes stay on their text.
-7. [ ] Click Inky, then **Turn X-ray off**. Everything goes back to normal.
+4. [ ] Hover over a glowing line. It gets brighter. No popup appears.
+5. [ ] Click a glowing line. A dark card opens beside it: **"There is hidden text here"**, the hidden text, how it was hidden, and a **High** or **Medium** badge.
+6. [ ] Click **Copy text**. The button says "Copied".
+7. [ ] Click **View all**. A list of every hidden item opens. Items that aren't on the page say "Not shown on the page". Click an item to jump to it.
+8. [ ] Press **Esc** to close the card or list. X-ray stays on.
+9. [ ] Scroll up and down. The glowing text stays on its spot.
+10. [ ] Click the **X** in the top bar. Everything goes back to normal.
 
 Control check (should show nothing):
 
-8. [ ] Open any normal website, for example a news article, and turn X-ray on.
-9. [ ] The panel says **"Nothing hidden from you here"**. Turn X-ray off.
+11. [ ] Open any normal website, for example a news article, and turn X-ray on.
+12. [ ] The top bar says **"No hidden instructions found"**. Click the X to turn it off.
 
 When you're done with the whole runbook, stop the server with **Ctrl + C** in Terminal.
 
