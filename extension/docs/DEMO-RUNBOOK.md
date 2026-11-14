@@ -121,8 +121,8 @@ The paste guard only reacts when the copied text has hidden instructions in it. 
 
 3. [ ] Open chatgpt.com and click in the message box.
 4. [ ] Press **Cmd + V**.
-5. [ ] A HiddenInk box appears: **"This paste contains hidden instructions"**, with four buttons: **Show me**, **Cancel**, **Paste anyway**, **Paste clean**.
-6. [ ] Click **Show me**. The hidden snippets are listed.
+5. [ ] A HiddenInk box appears: **"Hidden instructions in what you're pasting"**. It lists each hidden item with a **High** or **Medium** badge and has four buttons: **Show me**, **Cancel**, **Paste anyway**, **Paste clean**. It is light or dark to match the chat site.
+6. [ ] Click **Show me**. Each item shows its full text and how it was hidden.
 7. [ ] Click **Paste clean**. The message box now has the job listing **without** the hidden lines.
 8. [ ] Clear the message box. Do not send anything.
 
@@ -144,7 +144,7 @@ The demo files are in `hiddenink/corpus/demo/`. Upload **one file at a time**.
 **Poisoned résumé, with the attach button:**
 
 1. [ ] In ChatGPT, click the **attach / paperclip** button and pick `resume_poisoned.pdf`.
-2. [ ] A HiddenInk box appears with a picture of the page, a glowing box over the hidden line, and three buttons: **Cancel**, **Upload anyway**, **Upload clean text instead**.
+2. [ ] A HiddenInk box appears: **"Hidden text found in resume_poisoned.pdf"**. It shows a small picture of the page with the hidden line highlighted, the hidden text with a **High** or **Medium** badge, and three buttons: **Upload anyway**, **Cancel**, **Upload clean text instead**.
 3. [ ] The file is **not** attached yet.
 4. [ ] Click **Upload anyway**. The PDF should now appear as an attachment in the message box. Remove it.
 5. [ ] Attach `resume_poisoned.pdf` again, click **Upload clean text instead**. A file called `resume_poisoned.clean.txt` should appear as the attachment. Remove it.
@@ -227,7 +227,7 @@ extension/scripts/smoke/corpus.sh    # all 81 test files through the extension, 
 ## Stage 1 "done" checklist (from the team brief)
 
 - [ ] Uploading `resume_poisoned.pdf` to ChatGPT shows the upload guard with the hidden line highlighted.
-- [ ] X-ray on `job_listing_poisoned.html` highlights every hidden snippet with hover cards.
+- [ ] X-ray on `job_listing_poisoned.html` reveals every hidden snippet, and clicking one opens its card.
 - [ ] Pasting the job listing into ChatGPT shows the paste guard, and "Paste clean" works.
 - [ ] Clean résumés, the scanned PDF and the normal pages show no warnings.
 - [ ] `eval/run_local.py` prints the detection rate and false-alarm rate. *(Rukmini)*

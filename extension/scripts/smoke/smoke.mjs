@@ -108,7 +108,7 @@ async () => { const [tab] = await chrome.tabs.query({ active: true }); return ch
   });
   await page.waitForTimeout(400);
   const realGuard = await page.locator("hiddenink-guard").evaluate((h) => h.shadowRoot?.textContent ?? "").catch(() => "");
-  check("paste guard caught a real Unicode-tag payload", /Paste clean/.test(realGuard) && /1 hidden instruction is hidden/.test(realGuard), realGuard.replace(/\s+/g, " ").slice(-120));
+  check("paste guard caught a real Unicode-tag payload", /Paste clean/.test(realGuard) && /1 item that is invisible on the page/.test(realGuard), realGuard.replace(/\s+/g, " ").slice(-120));
   check("page did not see the blocked Unicode paste", !(await page.textContent("#log")).includes("paste-seen"));
   await page.locator("hiddenink-guard").locator("button", { hasText: "Show me" }).click();
   const shown = await page.locator("hiddenink-guard").evaluate((h) => h.shadowRoot?.textContent ?? "");
@@ -158,7 +158,7 @@ async () => { const [tab] = await chrome.tabs.query({ active: true }); return ch
   check("page preview rendered by pdf.js", imgs.length === 1 && !imgs[0].startsWith("0x"), imgs.join(" "));
   // The hidden line was drawn at x=72pt, baseline y=600pt from the bottom of a 792pt page => top ≈ 191pt from the top.
   const box = await page.locator("hiddenink-guard").evaluate((h) => {
-    const fig = h.shadowRoot.querySelector("figure"); const b = fig.querySelector(".hi-glow");
+    const fig = h.shadowRoot.querySelector("figure"); const b = fig.querySelector(".hi-mark");
     if (!b) return null;
     const fr = fig.getBoundingClientRect(), br = b.getBoundingClientRect();
     return { leftPt: ((br.left - fr.left) / fr.width) * 612, topPt: ((br.top - fr.top) / fr.height) * 792, widthPt: (br.width / fr.width) * 612 };

@@ -22,7 +22,7 @@ function bboxToPercent(bbox: [number, number, number, number], preview: PagePrev
 export function PdfPreview({ preview, findings, activeId, onSelect }: { preview: PagePreview; findings: Finding[]; activeId?: string; onSelect: (id: string) => void }) {
   const onPage = findings.filter((f) => f.location.page === preview.page && f.location.bbox);
   return (
-    <figure className="relative inline-block w-full overflow-hidden rounded-lg border border-paper-deep bg-white shadow-sm">
+    <figure className="relative inline-block w-full overflow-hidden rounded-md border border-hi-border bg-white">
       <img src={preview.dataUrl} alt={`Page ${preview.page} preview`} className="block w-full" draggable={false} />
       {onPage.map((f) => (
         <button
@@ -31,10 +31,10 @@ export function PdfPreview({ preview, findings, activeId, onSelect }: { preview:
           title="Hidden text"
           onClick={() => onSelect(f.id)}
           style={bboxToPercent(f.location.bbox!, preview)}
-          className={`hi-glow absolute min-h-[10px] rounded-sm bg-amber/25 ${activeId === f.id ? "ring-2 ring-ink" : ""}`}
+          className={`hi-mark absolute min-h-[8px] rounded-sm ${activeId === f.id ? "hi-mark-active" : ""}`}
         />
       ))}
-      <figcaption className="absolute bottom-1 right-2 rounded bg-ink/70 px-1.5 text-[11px] text-paper">page {preview.page}</figcaption>
+      <figcaption className="absolute bottom-1 right-1.5 rounded bg-white/90 px-1 text-[11px] text-[#444746]">Page {preview.page}</figcaption>
     </figure>
   );
 }

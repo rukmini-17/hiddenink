@@ -113,9 +113,11 @@
     0 0 28px rgba(95, 230, 212, 0.5);
 }
 
-/* Legacy glow used by the old X-ray outlines and PDF preview boxes. */
-.hi-glow {
-  box-shadow:
-    0 0 0 2px #e8a33d,
-    0 0 18px 4px rgba(232, 163, 61, 0.55);
+/* Hidden line on a PDF page preview (upload guard). */
+.hi-mark {
+  background: var(--hi-mark-fill);
+  border: 1.5px solid var(--hi-mark-line);
+}
+.hi-mark-active {
+  box-shadow: 0 0 0 3px var(--hi-mark-fill);
 }

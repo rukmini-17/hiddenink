@@ -25,16 +25,11 @@ module.exports = {
           "med-bg": "var(--hi-med-bg)",
           "med-fg": "var(--hi-med-fg)",
         },
-        // Legacy orange palette, still used by the old X-ray panel and guard modals until they are replaced.
-        ink: { DEFAULT: "#1f2a44", soft: "#3b4866", faint: "#8a93a8" },
-        paper: { DEFAULT: "#fbf7f0", deep: "#f1eadf" },
-        amber: { DEFAULT: "#e8a33d", soft: "#f6d8a4" },
       },
       fontFamily: {
         sys: ["Roboto", "system-ui", "-apple-system", "BlinkMacSystemFont", '"Segoe UI"', "sans-serif"],
       },
       boxShadow: {
-        card: "0 10px 30px rgba(31, 42, 68, 0.18)",
         dialog: "0 8px 32px rgba(0, 0, 0, 0.6)",
         "dialog-light": "0 4px 8px 3px rgba(60, 64, 67, 0.15), 0 1px 3px rgba(60, 64, 67, 0.3)",
       },

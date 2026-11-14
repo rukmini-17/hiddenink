@@ -43,9 +43,9 @@ Turn it off for real use.
 ```
 entrypoints/
   background.ts            toolbar badge count
-  popup/                   X-ray toggle, finding count, Inky
+  popup/                   X-ray switch and finding count
   options/                 settings: serverUrl (Stage 2), test mode
-  xray.content/            X-ray overlay (all URLs; idle until the popup toggles it)
+  xray.content/            X-ray dim + reveal layers, click card, top bar, View all (all URLs; idle until toggled)
   guards.content/          paste guard + upload guard (chatbot sites, document_start)
 lib/
   intercept.ts, replay.ts  N0: capture-phase interception and synthetic re-send of uploads/pastes
@@ -54,7 +54,10 @@ lib/
   explain.ts               plain-language template text per technique (Gemini text comes in Stage 2)
   remote.ts, settings.ts   RemoteLayers no-op stub + serverUrl setting (Stage 2 hooks)
   shadowHost.ts            React root inside a Shadow DOM
-components/                Inky, FindingCard, Modal, PdfPreview
+  theme.ts                 light/dark choice for dialogs (follows the page) and extension pages (follows the system)
+components/                Logo, Dialog, Likelihood badge, PdfPreview
+assets/icon/               icon SVGs; scripts/icons/make-icons.sh renders public/icon/*.png in Docker
+docs/design/               approved UI spec and reference images
 ```
 
 See `docs/N0-upload-spike.md` for how upload interception works and what still needs checking on each site.
