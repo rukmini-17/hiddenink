@@ -27,6 +27,7 @@
     "pdfjs-dist": "4.10.38"
   },
   "devDependencies": {
+    "@napi-rs/canvas": "0.1.100",
     "@vitest/browser": "2.1.8",
     "jsdom": "25.0.1",
     "playwright": "1.49.1",

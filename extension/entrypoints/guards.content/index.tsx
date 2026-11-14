@@ -1,11 +1,13 @@
+import { scanPdf } from "@hiddenink/core";
 import { defineContentScript } from "wxt/utils/define-content-script";
 import "@/assets/ui.css";
-import { fileToBase64 } from "@/lib/base64";
 import { CHATBOT_MATCHES, MAX_PDF_BYTES } from "@/lib/config";
+import { flaggedOf } from "@/lib/explain";
 import { cleanTextFile, isPdf } from "@/lib/files";
 import { installPasteInterceptor, installUploadInterceptor, type UploadIntercept } from "@/lib/intercept";
-import { sendToBackground, type PdfScanResponse } from "@/lib/messages";
+import { renderPreviews } from "@/lib/pdfPreview";
 import { hasFlagged, scanPaste } from "@/lib/scan";
+import { fakePdfResult } from "@/lib/testMode";
 import { createSettingsCache } from "@/lib/settings";
 import { ShadowHost } from "@/lib/shadowHost";
 import { PasteGuardModal } from "./PasteGuardModal";
@@ -14,8 +16,8 @@ import { UploadGuardModal } from "./UploadGuardModal";
 // Paste guard + upload guard on chatbot sites. Must run at document_start so our capture-phase
 // listeners are registered before the site's own.
 //
-// Privacy: clipboard contents and files are scanned on-device and never stored or sent anywhere
-// (the PDF bytes only travel to the extension's own offscreen document).
+// Privacy: clipboard contents and files are scanned on-device, right here in the content script,
+// and never stored or sent anywhere.
 
 export default defineContentScript({
   matches: CHATBOT_MATCHES,
@@ -62,28 +64,24 @@ export default defineContentScript({
       try {
         for (const pdf of pdfs) {
           if (pdf.size > MAX_PDF_BYTES) continue;
-          const res = await sendToBackground<PdfScanResponse>({
-            type: "pdf:scan",
-            target: "background",
-            name: pdf.name,
-            pdfBase64: await fileToBase64(pdf),
-            testMode: settings.current.testMode,
-          });
-          if (!res.ok) throw new Error(res.error);
-          if (!hasFlagged(res.result)) continue;
+          const bytes = await pdf.arrayBuffer();
+          let result = await scanPdf(bytes); // core copies the buffer, so `bytes` stays usable for previews
+          if (settings.current.testMode && !hasFlagged(result)) result = fakePdfResult(2);
+          if (!hasFlagged(result)) continue;
+          const previews = await renderPreviews(bytes, flaggedOf(result.findings));
 
           await host.render(
             <UploadGuardModal
               fileName={pdf.name}
-              result={res.result}
-              previews={res.previews}
+              result={result}
+              previews={previews}
               onUploadAnyway={() => {
                 close();
                 upload.replay(upload.files);
               }}
               onUploadClean={() => {
                 close();
-                upload.replay(upload.files.map((f) => (f === pdf ? cleanTextFile(pdf.name, res.result.visibleText) : f)));
+                upload.replay(upload.files.map((f) => (f === pdf ? cleanTextFile(pdf.name, result.visibleText) : f)));
               }}
               onCancel={close}
             />,

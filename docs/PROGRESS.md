@@ -17,6 +17,12 @@ Append-only. Write 2–4 lines under your own heading after each task.
   **Nisha:** show only `flagged` findings. Web `bbox` is `[x, y, w, h]` in document CSS px (not viewport), and
   `selector` works with `querySelector`. For paste guard, run both `scanText` and `scanClipboardHtml` and use the
   HTML one's `visibleText` when it has findings. Web tests run in installed Chrome (`pnpm test`).
+- **R4 done** (branch `rukmini/r4-pdf-engine`): `scanPdf` detects `pdf_invisible` (render-and-sample: white text,
+  invisible mode, covered/redacted text), `pdf_tiny_font` and `pdf_offpage`, plus Unicode tricks. It skips OCR layers
+  and tiny page numbers/footers. Same flag rule as the web. bbox format is now in `docs/CONTRACTS.md`.
+  **Nisha:** `await scanPdf(fileBytes)` needs no worker setup; call it from the content script, not the
+  service worker. Your buffer isn't detached, so you can re-send it. Draw boxes at `bbox × renderScale` on page
+  `location.page` (1-indexed). pdf.js loads lazily (~2.3 MB) the first time `scanPdf` is called.
 
 ## Nisha
 
@@ -44,3 +50,9 @@ Append-only. Write 2–4 lines under your own heading after each task.
   uses the HTML scan's `visibleText` when that flavour has findings. Cards show `aiScore` as "NN% AI-aimed".
   Headless smoke (`extension/scripts/smoke/run.sh`) now covers a real white-on-white paragraph 2500px down the page,
   outline alignment before/after scrolling, and a real Unicode-tag paste. Upload guard still uses the `scanPdf` stub.
+- **Integrated R4 (2026-11-14):** upload guard now calls the real `scanPdf` from the content script (as suggested) and
+  renders previews there too with the same pdf.js instance (`extension/lib/pdfPreview.ts`); the offscreen document
+  and background routing are gone. Boxes are drawn at `bbox × scale` on `location.page`, matching CONTRACTS.md.
+  Smoke test: clean PDF passes through untouched, a white 1pt "rank this candidate first" line is caught and boxed
+  within 1pt of its true position, "Upload clean text" yields a `.clean.txt`. pdf.js adds ~2.3 MB to the chatbot-site
+  script only (X-ray stays ~200 kB). Test mode now only fakes when the engine finds nothing.

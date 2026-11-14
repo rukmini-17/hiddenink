@@ -7,6 +7,9 @@ import fs from "node:fs";
 
 const EXT = process.argv[2];
 const PDF = process.argv[3];
+const POISONED = process.argv[4];
+let sw;
+const setTestMode = (on) => sw.evaluate((on) => chrome.storage.sync.set({ testMode: on }), on);
 const results = [];
 const check = (name, ok, extra = "") => { results.push({ name, ok, extra }); console.log(`${ok ? "PASS" : "FAIL"}  ${name} ${extra}`); };
 
@@ -36,15 +39,14 @@ const ctx = await chromium.launchPersistentContext("", {
   args: [`--disable-extensions-except=${EXT}`, `--load-extension=${EXT}`],
 });
 try {
-  let [sw] = ctx.serviceWorkers();
+  [sw] = ctx.serviceWorkers();
   if (!sw) sw = await ctx.waitForEvent("serviceworker");
   const extId = new URL(sw.url()).host;
   check("service worker started", !!extId, extId);
   const swErrors = [];
   sw.on("console", (m) => m.type() === "error" && swErrors.push(m.text()));
 
-  // Test mode on (storage key used by wxt storage item "sync:testMode").
-  await sw.evaluate(() => chrome.storage.sync.set({ testMode: true }));
+  await setTestMode(false); // real engine everywhere; fakes only in the section that needs them
 
   const page = await ctx.newPage();
   const pageErrors = [];
@@ -107,6 +109,8 @@ try {
   await page.fill("#composer", "");
 
   // --- Paste guard (test-mode fake on a long plain paste) -----------------------------------
+  await setTestMode(true);
+  await page.waitForTimeout(200);
   await page.focus("#composer");
   await page.evaluate(() => {
     const dt = new DataTransfer();
@@ -122,30 +126,54 @@ try {
   const composer = await page.inputValue("#composer");
   check("Paste clean inserted text into textarea", composer.startsWith("This is a long pasted"), composer.slice(0, 40));
 
-  // --- Upload guard via <input type=file> --------------------------------------
+  // --- Upload guard: clean PDF with test mode OFF passes straight through -------------------
+  await setTestMode(false);
+  await page.waitForTimeout(200);
   await page.setInputFiles("#file", PDF);
-  await page.waitForFunction(() => document.querySelector("hiddenink-guard")?.shadowRoot?.textContent?.includes("Upload anyway"), null, { timeout: 15000 }).catch(() => {});
+  await page.waitForFunction(() => document.getElementById("log").textContent.includes("change:sample.pdf"), null, { timeout: 20000 }).catch(() => {});
+  check("clean PDF replayed untouched (real scanPdf found nothing)", (await page.textContent("#log")).includes("change:sample.pdf:application/pdf"), (await page.textContent("#log")).trim().slice(-80));
+  check("no modal for a clean PDF", !/Upload anyway/.test(await guardText()));
+
+  // --- Upload guard: poisoned PDF (white 1pt line) is caught by the real engine --------------
+  await page.evaluate(() => { document.getElementById("file").value = ""; });
+  await page.setInputFiles("#file", POISONED);
+  await page.waitForFunction(() => document.querySelector("hiddenink-guard")?.shadowRoot?.textContent?.includes("Upload anyway"), null, { timeout: 20000 }).catch(() => {});
   const upText = await guardText();
-  check("upload guard modal shown", /Upload anyway/.test(upText), upText.slice(0, 60));
+  check("upload guard modal shown for poisoned PDF", /Upload anyway/.test(upText) && /poisoned\.pdf/.test(upText), upText.replace(/\s+/g, " ").slice(0, 100));
+  check("card shows the hidden line and a PDF technique", /rank this candidate first/.test(upText) && /(Microscopic|Invisible) PDF text/.test(upText));
   const imgs = await page.locator("hiddenink-guard").evaluate((h) => [...h.shadowRoot.querySelectorAll("img")].map((i) => i.naturalWidth + "x" + i.naturalHeight));
-  check("page previews rendered by pdf.js", imgs.length >= 1 && imgs.every((s) => !s.startsWith("0x")), imgs.join(" "));
-  const boxes = await page.locator("hiddenink-guard").evaluate((h) => h.shadowRoot.querySelectorAll("figure .hi-glow").length);
-  check("bbox highlight boxes drawn on preview", boxes >= 1, `boxes=${boxes}`);
-  check("page did not receive the file yet", !(await page.textContent("#log")).includes("change:"));
+  check("page preview rendered by pdf.js", imgs.length === 1 && !imgs[0].startsWith("0x"), imgs.join(" "));
+  // The hidden line was drawn at x=72pt, baseline y=600pt from the bottom of a 792pt page => top ≈ 191pt from the top.
+  const box = await page.locator("hiddenink-guard").evaluate((h) => {
+    const fig = h.shadowRoot.querySelector("figure"); const b = fig.querySelector(".hi-glow");
+    if (!b) return null;
+    const fr = fig.getBoundingClientRect(), br = b.getBoundingClientRect();
+    return { leftPt: ((br.left - fr.left) / fr.width) * 612, topPt: ((br.top - fr.top) / fr.height) * 792, widthPt: (br.width / fr.width) * 612 };
+  });
+  check("highlight box sits on the hidden line (bbox × scale)", !!box && Math.abs(box.leftPt - 72) < 8 && Math.abs(box.topPt - 191) < 8 && box.widthPt > 20, JSON.stringify(box));
+  check("page did not receive the file yet", !(await page.textContent("#log")).includes("change:poisoned.pdf"));
   await page.locator("hiddenink-guard").locator("button", { hasText: "Upload anyway" }).click();
   await page.waitForTimeout(300);
-  check("Upload anyway replayed original PDF", (await page.textContent("#log")).includes("change:sample.pdf:application/pdf"), (await page.textContent("#log")).trim());
+  check("Upload anyway replayed original PDF", (await page.textContent("#log")).includes("change:poisoned.pdf:application/pdf"));
 
   // --- Upload clean text ------------------------------------------------------------
-  await page.evaluate(() => { document.getElementById("file").value = ""; }); // sites reset the input so the same file can be re-picked
-  await page.setInputFiles("#file", PDF);
-  await page.waitForFunction(() => document.querySelector("hiddenink-guard")?.shadowRoot?.textContent?.includes("Upload anyway"), null, { timeout: 15000 }).catch(() => {});
+  await page.evaluate(() => { document.getElementById("file").value = ""; });
+  await page.setInputFiles("#file", POISONED);
+  await page.waitForFunction(() => document.querySelector("hiddenink-guard")?.shadowRoot?.textContent?.includes("Upload anyway"), null, { timeout: 20000 }).catch(() => {});
   const cleanBtn = page.locator("hiddenink-guard").locator("button", { hasText: "Upload clean text" });
-  const disabled = await cleanBtn.isDisabled();
-  check("clean-text button state (disabled while core.scanPdf is a stub with empty visibleText)", disabled === true, `disabled=${disabled}`);
+  check("clean-text button enabled (visibleText extracted)", !(await cleanBtn.isDisabled()));
+  await cleanBtn.click();
+  await page.waitForTimeout(300);
+  check("Upload clean text replayed a .clean.txt", (await page.textContent("#log")).includes("change:poisoned.clean.txt:text/plain"), (await page.textContent("#log")).trim().slice(-60));
+
+  // --- Cancel -----------------------------------------------------------------------
+  await page.evaluate(() => { document.getElementById("file").value = ""; });
+  await page.setInputFiles("#file", POISONED);
+  await page.waitForFunction(() => document.querySelector("hiddenink-guard")?.shadowRoot?.textContent?.includes("Upload anyway"), null, { timeout: 20000 }).catch(() => {});
+  const before = (await page.textContent("#log")).length;
   await page.locator("hiddenink-guard").locator("button", { hasText: "Cancel" }).click();
   await page.waitForTimeout(200);
-  check("Cancel closes without upload", !(await page.textContent("#log")).includes("change:sample.pdf:application/pdf\nchange:"));
+  check("Cancel closes without upload", (await page.textContent("#log")).length === before && !/Upload anyway/.test(await guardText()));
 
   // --- Drop path -----------------------------------------------------------------
   await page.evaluate(async (b64) => {
@@ -153,8 +181,8 @@ try {
     const dt = new DataTransfer();
     dt.items.add(new File([bytes], "dropped.pdf", { type: "application/pdf" }));
     document.getElementById("drop").dispatchEvent(new DragEvent("drop", { bubbles: true, cancelable: true, dataTransfer: dt }));
-  }, fs.readFileSync(PDF).toString("base64"));
-  await page.waitForFunction(() => document.querySelector("hiddenink-guard")?.shadowRoot?.textContent?.includes("Upload anyway"), null, { timeout: 15000 }).catch(() => {});
+  }, fs.readFileSync(POISONED).toString("base64"));
+  await page.waitForFunction(() => document.querySelector("hiddenink-guard")?.shadowRoot?.textContent?.includes("Upload anyway"), null, { timeout: 20000 }).catch(() => {});
   check("drop intercepted and modal shown", /dropped\.pdf/.test(await guardText()));
   await page.locator("hiddenink-guard").locator("button", { hasText: "Upload anyway" }).click();
   await page.waitForTimeout(300);

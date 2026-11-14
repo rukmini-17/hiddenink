@@ -50,7 +50,15 @@ cleanText(text: string): string                                   // strips invi
 - Build with `pnpm build:core`.
 - **Status:** all functions are stubs that return no findings (R0). Real detectors land incrementally;
   progress is logged in `docs/PROGRESS.md`.
-- PDF `bbox` units: _to be documented in R4_ (pdf.js viewport coordinates at scale 1, origin top-left).
+
+### `location.bbox` format
+
+Always `[x, y, width, height]`, origin at the **top-left**, y grows downward.
+
+| Source | Coordinate space |
+|---|---|
+| Web (`scanDocument`) | Page CSS px, origin = top-left of the **document** (already includes `scrollX`/`scrollY`; subtract them for viewport coords). |
+| PDF (`scanPdf`) | Per page (`location.page`, **1-indexed**), origin = top-left of **that page**, in pdf.js viewport units at scale 1 (= PDF points, 1/72 in). To draw on a preview rendered at scale `s`, multiply every number by `s`. |
 
 ## Stage 2 HTTP contract (reference only, not built yet)
 

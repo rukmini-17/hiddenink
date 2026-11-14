@@ -32,7 +32,7 @@ container; if you ever install Node on the host, delete `node_modules` and re-in
 Until the detection engine returns real findings, turn on **Test mode** in the extension's settings
 (popup → Settings). It fakes findings so the whole flow can be exercised:
 
-- every PDF upload on a chatbot site opens the upload guard (with a highlighted box on the page preview);
+- every PDF upload on a chatbot site opens the upload guard, even for a clean PDF (with a sample box on the page preview);
 - every paste of 40+ characters opens the paste guard;
 - X-ray highlights the first two paragraphs of any page.
 
@@ -42,8 +42,7 @@ Turn it off for real use.
 
 ```
 entrypoints/
-  background.ts            badge count; routes PDF scans to the offscreen document
-  offscreen/               extension-origin page that runs pdf.js (scan + page previews)
+  background.ts            toolbar badge count
   popup/                   X-ray toggle, finding count, Inky
   options/                 settings: serverUrl (Stage 2), test mode
   xray.content/            X-ray overlay (all URLs; idle until the popup toggles it)
@@ -51,6 +50,7 @@ entrypoints/
 lib/
   intercept.ts, replay.ts  N0: capture-phase interception and synthetic re-send of uploads/pastes
   scan.ts, testMode.ts     wrappers around @hiddenink/core, plus fake findings for test mode
+  pdfPreview.ts            renders flagged PDF pages to JPEG previews with pdf.js (same instance as core)
   explain.ts               plain-language template text per technique (Gemini text comes in Stage 2)
   remote.ts, settings.ts   RemoteLayers no-op stub + serverUrl setting (Stage 2 hooks)
   shadowHost.ts            React root inside a Shadow DOM

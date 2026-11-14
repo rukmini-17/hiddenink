@@ -1,7 +1,6 @@
-import type { ScanResult } from "@hiddenink/core";
 import { browser } from "wxt/browser";
 
-// Typed messages between popup, content scripts, background and the offscreen document.
+// Typed messages between the popup, the content scripts and the background.
 
 export type PagePreview = {
   page: number; // 1-based
@@ -16,12 +15,7 @@ export type XrayStatus = { on: boolean; flagged: number; total: number };
 export type Message =
   | { type: "xray:toggle" } // popup → content
   | { type: "xray:status" } // popup → content
-  | { type: "xray:count"; flagged: number } // content → background (badge)
-  | { type: "pdf:scan"; target: "background" | "offscreen"; name: string; pdfBase64: string; testMode: boolean };
-
-export type PdfScanResponse =
-  | { ok: true; result: ScanResult; previews: PagePreview[]; pageCount: number }
-  | { ok: false; error: string };
+  | { type: "xray:count"; flagged: number }; // content → background (badge)
 
 export function sendToBackground<T>(msg: Message): Promise<T> {
   return browser.runtime.sendMessage(msg) as Promise<T>;
