@@ -82,6 +82,9 @@ node. A 3,000-paragraph page scans in ~50 ms in Chrome.
     because isolates and embeddings appear in normal right-to-left text and in chat apps around usernames.
   - `variation_selectors` (U+FE00–FE0F, U+E0100–E01EF): runs of ≥3 are flagged and decoded as bytes
     ("emoji smuggling"). A single selector after an emoji is normal.
+  - **Control characters**: `cleanText` also normalizes every line break (CRLF, CR, FF, VT, NEL, U+2028/2029)
+    to `\n` and removes all other C0/C1 controls and DEL, so clean text only ever keeps tab and newline. These
+    aren't reported as findings (they're junk, e.g. PDF subset fonts extract unmappable glyphs as U+0000).
   - Limitations: lone ZWJ/ZWNJ between Latin letters only count toward the "scattered" total; other
     invisible characters (e.g. U+180E, U+2061–2064 invisible math operators) aren't covered yet.
 

@@ -28,5 +28,7 @@ Append-only. Write 2–4 lines under your own heading after each task.
   **Nisha, demo files are in `corpus/demo/`:** `resume_poisoned.pdf` (upload guard), `resume_clean.pdf`,
   four clean résumés, `job_listing_poisoned.html` (X-ray + paste guard). Sanity check: 0 benign flagged; every obvious
   payload caught; subtle ones mostly missed by the keyword scorer (expected; R6 will measure it).
+- **Fix** (branch `rukmini/fix-cleantext-nul`): `cleanText` (so every `visibleText`) now strips control characters
+  (e.g. the U+0000 that PDF subset fonts produce) and normalizes line breaks to `\n`. Only tab and newline remain.
 
 ## Nisha
