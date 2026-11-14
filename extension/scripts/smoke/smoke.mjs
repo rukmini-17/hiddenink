@@ -67,22 +67,24 @@ try {
   const xrayText = await page.locator("hiddenink-xray").evaluate((h) => h.shadowRoot?.textContent ?? "");
   check("xray panel rendered with count", /1 hidden instruction on this page/.test(xrayText), xrayText.replace(/\s+/g, " ").slice(-160));
   check("card explains the technique and the AI reasons", /Invisible color/.test(xrayText) && /AI-aimed/.test(xrayText));
-  const glowCount = await page.locator("hiddenink-xray").evaluate((h) => h.shadowRoot.querySelectorAll(".hi-glow").length);
-  check("xray draws glowing outlines", glowCount === 1, `glows=${glowCount}`);
+  const revealCount = await page.locator("hiddenink-xray").evaluate((h) => h.shadowRoot.querySelectorAll(".hi-reveal").length);
+  check("xray draws the hidden text in a reveal layer", revealCount === 1, `reveals=${revealCount}`);
+  const dim = await page.locator("hiddenink-xray").evaluate((h) => getComputedStyle(h.shadowRoot.querySelector(".hi-dim")).backdropFilter);
+  check("dim layer uses backdrop-filter", /invert/.test(dim), dim);
   const badge = await sw.evaluate(async () => { const [tab] = await chrome.tabs.query({ active: true }); return chrome.action.getBadgeText({ tabId: tab.id }); });
   check("badge shows flagged count", badge === "1", `badge=${badge}`);
-  // Outline must sit on the hidden paragraph in viewport coordinates, before and after scrolling.
+  // The revealed copy must sit on the hidden paragraph, before and after scrolling (it has 2px side padding).
   const delta = () => page.evaluate(() => {
     const el = document.getElementById("hidden").getBoundingClientRect();
-    const glow = document.querySelector("hiddenink-xray").shadowRoot.querySelector(".hi-glow").getBoundingClientRect();
-    return { dx: Math.round(glow.left + 4 - el.left), dy: Math.round(glow.top + 4 - el.top), elTop: Math.round(el.top), glowTop: Math.round(glow.top), scrollY: window.scrollY };
+    const r = document.querySelector("hiddenink-xray").shadowRoot.querySelector(".hi-reveal").getBoundingClientRect();
+    return { dx: Math.round(r.left + 2 - el.left), dy: Math.round(r.top - el.top), elTop: Math.round(el.top), revealTop: Math.round(r.top), scrollY: window.scrollY };
   });
   const d0 = await delta();
-  check("outline aligned with hidden text at scroll 0 (far below the fold)", Math.abs(d0.dx) <= 2 && Math.abs(d0.dy) <= 2 && d0.elTop > 2000, JSON.stringify(d0));
+  check("revealed text aligned with hidden text at scroll 0 (far below the fold)", Math.abs(d0.dx) <= 2 && Math.abs(d0.dy) <= 2 && d0.elTop > 2000, JSON.stringify(d0));
   await page.evaluate(() => window.scrollTo(0, 2400));
   await page.waitForTimeout(250);
   const d1 = await delta();
-  check("outline follows the text after scrolling", Math.abs(d1.dx) <= 2 && Math.abs(d1.dy) <= 2 && d1.scrollY > 2000 && d1.elTop < 800, JSON.stringify(d1));
+  check("revealed text follows the page when scrolling", Math.abs(d1.dx) <= 2 && Math.abs(d1.dy) <= 2 && d1.scrollY > 2000 && d1.elTop < 800, JSON.stringify(d1));
   await page.evaluate(() => window.scrollTo(0, 0));
   await page.waitForTimeout(250);
   const off = await sw.evaluate(async () => { const [tab] = await chrome.tabs.query({ active: true }); return chrome.tabs.sendMessage(tab.id, { type: "xray:toggle" }); });

@@ -23,3 +23,9 @@ export const MAX_PREVIEW_PAGES = 3;
 
 /** In test mode, pastes at least this long get a fake finding so the modal can be exercised. */
 export const TEST_MODE_MIN_PASTE_CHARS = 40;
+
+/**
+ * X-ray dims the page with `backdrop-filter`. On sites where that misbehaves, list the hostname here
+ * to use a plain dark overlay instead (page text is less readable, the revealed text still glows).
+ */
+export const XRAY_PLAIN_DIM_HOSTS: string[] = [];

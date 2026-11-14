@@ -23,8 +23,13 @@ export class ShadowHost {
         position: "inline",
         anchor: "body",
         onMount(container, _shadow, host) {
-          // The host sits in body flow with zero height; our fixed-position children draw on top of everything.
-          host.style.position = "relative";
+          // Pinned to the page origin with no size: our fixed children draw on top of everything, and
+          // absolute children (the X-ray reveal layer) don't move when the page grows above the host.
+          host.style.position = "absolute";
+          host.style.left = "0";
+          host.style.top = "0";
+          host.style.width = "0";
+          host.style.height = "0";
           host.style.zIndex = "2147483647";
           const el = document.createElement("div");
           container.append(el);
