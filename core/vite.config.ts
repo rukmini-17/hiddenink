@@ -1,4 +1,3 @@
-/// <reference types="vitest" />
 import { defineConfig } from "vite";
 
 // Two outputs from one entry:
@@ -16,8 +15,5 @@ export default defineConfig({
     sourcemap: true,
     emptyOutDir: true,
   },
-  test: {
-    environment: "jsdom",
-    include: ["test/**/*.test.ts"],
-  },
+  // Tests are configured in vitest.workspace.ts (unit in jsdom, web engine in Chrome).
 });

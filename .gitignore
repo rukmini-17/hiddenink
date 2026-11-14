@@ -16,4 +16,6 @@ __pycache__/
 
 # misc
 .DS_Store
+# vitest browser-mode failure screenshots
+__screenshots__/
 eval/results/*.tmp
