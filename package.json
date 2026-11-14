@@ -4,6 +4,7 @@
   "packageManager": "pnpm@9.15.0",
   "scripts": {
     "build:core": "pnpm --filter @hiddenink/core build",
-    "test": "pnpm --filter @hiddenink/core test"
+    "test": "pnpm --filter @hiddenink/core test",
+    "eval": "pnpm build:core && cd eval && uv run run_local.py"
   }
 }

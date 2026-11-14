@@ -240,3 +240,12 @@ WXT (Manifest V3) + React + Tailwind. All UI is rendered inside a Shadow DOM so 
   Clipboard contents and files never leave the device.
 - **Stage 2 hooks:** `lib/settings.ts` (`serverUrl`, empty = local only) and `lib/remote.ts` (`RemoteLayers`
   interface with a no-op implementation).
+
+## Local eval (R6): `eval/`
+
+`pnpm eval` scans every corpus file in headless Chrome through the core IIFE bundle and compares
+the findings with `corpus/manifest.json`. Code: `run_local.py` (CLI), `hiddenink_eval/runner.py`
+(Playwright: HTML via `file://`, PDFs via a harness page; timing inside the page around the scan
+call), `metrics.py` (pure functions; tested in `eval/tests/`), `report.py` (CSV / JSON / markdown).
+Outputs are the **rules-only baseline** (`eval/results/*_local.*`), and a Stage 2 run can sit next to them.
+Metric definitions, results and caveats are in **[docs/EVAL.md](EVAL.md)**.
