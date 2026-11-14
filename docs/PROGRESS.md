@@ -23,5 +23,10 @@ Append-only. Write 2–4 lines under your own heading after each task.
   **Nisha:** `await scanPdf(fileBytes)` needs no worker setup; call it from the content script, not the
   service worker. Your buffer isn't detached, so you can re-send it. Draw boxes at `bbox × renderScale` on page
   `location.page` (1-indexed). pdf.js loads lazily (~2.3 MB) the first time `scanPdf` is called.
+- **R5 done** (branch `rukmini/r5-corpus`): `corpus/` has 81 labeled files (58 attack, 21 benign, 2 keyword-stuffing
+  `hidden_benign`) and `manifest.json`. Regenerate with `cd corpus && uv run generate.py` (needs uv + Chrome).
+  **Nisha, demo files are in `corpus/demo/`:** `resume_poisoned.pdf` (upload guard), `resume_clean.pdf`,
+  four clean résumés, `job_listing_poisoned.html` (X-ray + paste guard). Sanity check: 0 benign flagged; every obvious
+  payload caught; subtle ones mostly missed by the keyword scorer (expected; R6 will measure it).
 
 ## Nisha
