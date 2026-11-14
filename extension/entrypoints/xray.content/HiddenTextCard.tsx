@@ -2,14 +2,15 @@ import type { Finding } from "@hiddenink/core";
 import { forwardRef, useState } from "react";
 import { LikelihoodLine } from "@/components/Likelihood";
 import { Brand } from "@/components/Logo";
-import { causeLine, whatItSays } from "@/lib/explain";
+import { askedPackagesPhrase, causeLine, whatItSays } from "@/lib/explain";
 
 // The card that opens when a revealed line is clicked (UI-SPEC.md, "Click card").
 
-export const HiddenTextCard = forwardRef<HTMLDivElement, { finding: Finding; onPage: boolean; total: number; onViewAll: () => void; onClose: () => void; style?: React.CSSProperties; className?: string }>(
-  function HiddenTextCard({ finding, onPage, total, onViewAll, onClose, style, className = "" }, ref) {
+export const HiddenTextCard = forwardRef<HTMLDivElement, { finding: Finding; visibleText: string; onPage: boolean; total: number; onViewAll: () => void; onClose: () => void; style?: React.CSSProperties; className?: string }>(
+  function HiddenTextCard({ finding, visibleText, onPage, total, onViewAll, onClose, style, className = "" }, ref) {
     const [copied, setCopied] = useState(false);
     const text = whatItSays(finding, 2000);
+    const asks = askedPackagesPhrase(finding, visibleText);
 
     async function copy() {
       try {
@@ -40,11 +41,16 @@ export const HiddenTextCard = forwardRef<HTMLDivElement, { finding: Finding; onP
         <h2 className="mt-3 text-xl font-normal leading-[26px] text-hi-fg">There is hidden text here</h2>
         <p className="mt-1 text-hi-muted">
           {onPage
-            ? "This text can’t be seen on the page, but an AI assistant reading it would see it."
-            : "This text isn’t shown anywhere on the page, but an AI assistant reading it would see it."}
+            ? "You can’t see this text, but a coding agent reading this page would follow it."
+            : "This text isn’t shown anywhere on the page, but a coding agent reading this page would follow it."}
         </p>
         <blockquote className="mt-3 max-h-40 overflow-y-auto whitespace-pre-wrap rounded-lg bg-hi-quote px-3 py-2.5 text-[13px] leading-[18px] text-hi-fg [overflow-wrap:anywhere]">{text}</blockquote>
         <p className="mt-3 text-hi-fg">{causeLine(finding)}</p>
+        {asks && (
+          <p className="mt-2 text-hi-fg">
+            It asks the agent to install <strong className="font-medium">{asks}</strong>, which the visible docs never mention.
+          </p>
+        )}
         <div className="mt-1">
           <LikelihoodLine finding={finding} />
         </div>

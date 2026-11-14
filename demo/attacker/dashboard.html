@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DEMO collector · Incoming credentials</title>
+<style>
+  :root { --bg:#0b0b0d; --tile:#141417; --line:#26262b; --fg:#f4f4f5; --muted:#a1a1aa; --faint:#71717a;
+          --red:#f87171; --red-soft:#fca5a5; --card:#1a0b0d; --card-line:#7f1d1d; --green:#22c55e; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--fg); font:15px/1.5 Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; min-height:100vh; display:flex; flex-direction:column; }
+  .wrap { width:100%; max-width:1184px; margin:0 auto; padding:32px 48px; flex:1; }
+  header { display:flex; justify-content:space-between; align-items:flex-start; gap:16px; flex-wrap:wrap; }
+  .kicker { color:var(--muted); font-size:13px; }
+  h1 { margin:2px 0 0; font-size:26px; font-weight:700; letter-spacing:-.01em; }
+  .right { display:flex; align-items:center; gap:14px; }
+  .demo { border:1px solid #d4d4d8; border-radius:6px; padding:3px 10px; font-size:12px; font-weight:700; letter-spacing:.06em; }
+  .status { display:flex; align-items:center; gap:7px; color:var(--muted); font-size:14px; }
+  .dot { width:8px; height:8px; border-radius:50%; background:var(--green); box-shadow:0 0 8px var(--green); }
+  .status.off .dot { background:var(--red); box-shadow:0 0 8px var(--red); }
+  button { background:#1c1c20; color:var(--fg); border:1px solid #3f3f46; border-radius:8px; padding:8px 14px; font:600 14px inherit; font-family:inherit; cursor:pointer; }
+  button:hover { background:#27272a; }
+  .tiles { display:grid; grid-template-columns:repeat(3, 1fr); gap:16px; margin-top:28px; }
+  .tile { background:var(--tile); border:1px solid var(--line); border-radius:12px; padding:14px 18px; }
+  .tile .k { color:var(--muted); font-size:13px; }
+  .tile .v { font-size:30px; font-weight:700; line-height:1.2; }
+  .tile .v.small { font-size:16px; padding-top:6px; }
+  #feed { margin-top:24px; display:flex; flex-direction:column; gap:20px; }
+  .empty { color:var(--faint); border:1px dashed var(--line); border-radius:14px; padding:40px; text-align:center; }
+  .theft { background:var(--card); border:1px solid var(--card-line); border-radius:14px; padding:22px 24px 10px; box-shadow:0 0 40px rgba(220,38,38,.18); }
+  .theft.new { animation: flash 1.6s ease-out; }
+  @keyframes flash { 0% { box-shadow:0 0 0 2px var(--red), 0 0 80px rgba(248,113,113,.7); } 100% { box-shadow:0 0 40px rgba(220,38,38,.18); } }
+  .theft-head { display:flex; justify-content:space-between; gap:16px; align-items:baseline; flex-wrap:wrap; }
+  .theft h2 { margin:0; color:var(--red); font-size:28px; font-weight:800; letter-spacing:-.01em; overflow-wrap:anywhere; }
+  .when { color:var(--red-soft); font-size:13px; white-space:nowrap; }
+  .source { margin:4px 0 0; font-size:14px; color:#e4e4e7; }
+  .items { margin-top:14px; }
+  .row { display:flex; justify-content:space-between; gap:16px; border-top:1px solid rgba(127,29,29,.55); padding:10px 0; font:14px/1.4 ui-monospace, "JetBrains Mono", SFMono-Regular, Menlo, monospace; }
+  .row .n { color:var(--red-soft); overflow-wrap:anywhere; }
+  .row .val { color:var(--fg); white-space:nowrap; }
+  footer { max-width:1184px; width:100%; margin:0 auto; padding:16px 48px 28px; color:var(--faint); font-size:12px; }
+  @media (max-width:720px) { .wrap, footer { padding-left:16px; padding-right:16px; } .tiles { grid-template-columns:1fr; } .theft h2 { font-size:22px; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <div class="kicker">collector · attacker.example</div>
+      <h1>Incoming credentials</h1>
+    </div>
+    <div class="right">
+      <span class="demo">DEMO – FICTIONAL ATTACKER</span>
+      <span class="status" id="status"><span class="dot"></span><span id="status-text">Listening</span></span>
+      <button type="button" id="reset">Reset</button>
+    </div>
+  </header>
+  <section class="tiles">
+    <div class="tile"><div class="k">Victims</div><div class="v" id="victims">0</div></div>
+    <div class="tile"><div class="k">Secrets received</div><div class="v" id="secrets">0</div></div>
+    <div class="tile"><div class="k">Delivery</div><div class="v small" id="delivery">—</div></div>
+  </section>
+  <section id="feed"><div class="empty">Waiting for data. Nothing has been stolen yet.</div></section>
+</div>
+<footer>All values are fake and were planted for this demo. Nothing here is a real credential.</footer>
+<script>
+  const feed = document.getElementById("feed");
+  const seen = new Set();
+  let events = [];
+  let firstLoad = true;
+
+  const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
+  const clock = (t) => new Date(t * 1000).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false });
+  function ago(t) {
+    const s = Math.max(0, Math.round(Date.now() / 1000 - t));
+    if (s < 10) return "just now";
+    if (s < 60) return s + "s ago";
+    if (s < 3600) return Math.floor(s / 60) + " min ago";
+    return Math.floor(s / 3600) + " h ago";
+  }
+
+  function card(ev, isNew) {
+    const c = el("article", "theft" + (isNew ? " new" : ""));
+    const head = el("div", "theft-head");
+    head.append(el("h2", null, "STOLEN from " + ev.host));
+    const when = el("span", "when"); when.dataset.t = ev.at; head.append(when);
+    c.append(head);
+    if (ev.source) c.append(el("p", "source", "Source: " + ev.source));
+    const items = el("div", "items");
+    for (const it of ev.items) { const r = el("div", "row"); r.append(el("span", "n", it.name), el("span", "val", it.value)); items.append(r); }
+    c.append(items);
+    return c;
+  }
+
+  function render() {
+    document.getElementById("victims").textContent = new Set(events.map((e) => e.host)).size;
+    document.getElementById("secrets").textContent = events.reduce((n, e) => n + e.items.length, 0);
+    const pkg = events.find((e) => e.package)?.package;
+    document.getElementById("delivery").textContent = pkg ? pkg + " · on import" : events.length ? "on import" : "—";
+    if (events.length === 0) { feed.replaceChildren(el("div", "empty", "Waiting for data. Nothing has been stolen yet.")); seen.clear(); return; }
+    const key = (e) => e.at + "|" + e.host;
+    feed.replaceChildren(...events.map((e) => { const isNew = !firstLoad && !seen.has(key(e)); seen.add(key(e)); return card(e, isNew); }));
+    tick();
+  }
+  function tick() { for (const w of document.querySelectorAll(".when")) w.textContent = ago(+w.dataset.t) + " · " + clock(+w.dataset.t); }
+
+  async function poll() {
+    try {
+      const r = await fetch("events", { cache: "no-store" });
+      if (!r.ok) throw new Error(r.status);
+      const next = (await r.json()).events;
+      if (JSON.stringify(next) !== JSON.stringify(events) || firstLoad) { events = next; render(); }
+      firstLoad = false;
+      document.getElementById("status").classList.remove("off");
+      document.getElementById("status-text").textContent = "Listening";
+    } catch {
+      document.getElementById("status").classList.add("off");
+      document.getElementById("status-text").textContent = "Offline";
+    }
+  }
+  document.getElementById("reset").addEventListener("click", async () => { await fetch("reset", { method: "POST" }).catch(() => {}); poll(); });
+  poll(); setInterval(poll, 1000); setInterval(tick, 5000);
+</script>
+</body>
+</html>
