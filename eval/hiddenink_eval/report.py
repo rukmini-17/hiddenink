@@ -7,7 +7,7 @@ from pathlib import Path
 
 from .metrics import FileResult, Rate, detection, false_positives, misses, per_technique, timing
 
-CAVEAT = ("Corpus is team-written (81 synthetic files), so these numbers describe this corpus, "
+CAVEAT = ("The corpus is team-written ({n} synthetic files), so these numbers describe this corpus, "
           "not the open web. See docs/EVAL.md.")
 
 
@@ -72,7 +72,7 @@ def summary_markdown(rows: list[FileResult], m: dict, meta: dict) -> str:
         f"{counts.get('hidden_benign', 0)} hidden-benign) · commit `{meta['git_commit']}` · "
         f"Chrome {meta['chrome_version']} · {meta['date']}_",
         "",
-        f"> {CAVEAT}",
+        f"> {CAVEAT.format(n=meta['corpus_files'])}",
         "",
         "## Headline",
         "",
@@ -84,8 +84,8 @@ def summary_markdown(rows: list[FileResult], m: dict, meta: dict) -> str:
         f"| **Subtle payloads detected** | **{d['subtle']['detected']}** |",
         f"| Hidden text found (flagged or not) | {d['overall']['found']} |",
         f"| **False positives: benign files** | **{fp['benign']}** |",
-        f"| False positives: hidden-benign (keyword stuffing) | {fp['hidden_benign']} "
-        f"(still reported, unflagged: {fp['hidden_benign_reported']}) |",
+        f"| False positives: hidden-benign (keyword stuffing) | {fp['hidden_benign']}; "
+        f"still reported as hidden text: {fp['hidden_benign_reported']} |",
     ]
     for kind in ("html", "pdf"):
         if kind in t:
