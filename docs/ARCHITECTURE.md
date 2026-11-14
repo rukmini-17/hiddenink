@@ -207,3 +207,33 @@ official numbers): **0 / 21 benign files flagged**, both keyword-stuffing files 
 them the hidden text *is* found (unflagged finding), but the keyword scorer gives it < 0.5; the subtle
 alt text, aria-label, sr-only and comment payloads aren't reported at all, because those sources only report
 AI-aimed text. That's the case for a learned classifier (Stage 2's `/score`).
+## Extension (`extension/`)
+
+WXT (Manifest V3) + React + Tailwind. All UI is rendered inside a Shadow DOM so page CSS and ours never mix.
+
+- **X-ray** (`entrypoints/xray.content`): on every URL, idle until the popup sends `xray:toggle`. Runs
+  `scanDocument(document)`, dims the page (pointer-events: none, so the page stays usable) and draws a glowing
+  outline over each flagged finding from its `bbox` (document px), re-projected into the viewport on every
+  scroll frame; a resize triggers a fresh scan. Findings with no bbox fall back to the `selector` rect, and those
+  with neither go to the side panel list. Hover/click shows a card: what it says (decoded if Unicode), how it
+  hides, why it looks AI-aimed, and the `aiScore`.
+- **Paste guard** (`entrypoints/guards.content`): capture-phase `paste` listener on `window`, registered at
+  `document_start` so it runs before the site's own. Reads `text/plain` + `text/html`, scans with `scanText`
+  and `scanClipboardHtml` synchronously; if nothing is flagged the paste is untouched. Otherwise the event
+  is cancelled and a modal offers Paste clean (`visibleText`, the HTML flavour's when it found hidden styled
+  text), Paste anyway, Show me. Re-insertion sends a synthetic `ClipboardEvent("paste")` (rich editors such as
+  ProseMirror handle it); plain textareas ignore synthetic events, so it falls back to inserting at the caret.
+- **Upload guard** (`lib/intercept.ts`, `lib/replay.ts`, `lib/pdfPreview.ts`): capture-phase `change` (file
+  input), `drop` and `paste`-with-files listeners stop PDF uploads before the page sees them. The content
+  script calls `scanPdf(bytes)` directly (pdf.js runs on the main thread, see the PDF section) and, when
+  something is flagged, renders the pages that have findings to JPEG previews with the same pdf.js instance.
+  Modal: preview with boxes at `bbox × scale`, cards, and Upload anyway / Cancel / Upload clean text (a `.txt`
+  of `visibleText`). Nothing flagged, or any error → the original upload is replayed untouched (fail open).
+  Replays are synthetic `change`/`drop`/`paste` events built with a `DataTransfer`; a module flag stops our
+  own listeners from intercepting them. Previews render with `intent: "print"`, which paces pdf.js with timers
+  instead of `requestAnimationFrame`, so a background tab can't stall it.
+- **Limitations:** uploads via `showOpenFilePicker()` can't be intercepted from a content script (none of the
+  three chat sites use it). pdf.js is bundled into the chatbot-site content script (~2.3 MB), not into X-ray.
+  Clipboard contents and files never leave the device.
+- **Stage 2 hooks:** `lib/settings.ts` (`serverUrl`, empty = local only) and `lib/remote.ts` (`RemoteLayers`
+  interface with a no-op implementation).
