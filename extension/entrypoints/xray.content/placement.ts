@@ -26,11 +26,15 @@ function resolveElement(f: Finding): Element | null {
   }
 }
 
+// Any size above zero counts: at a browser zoom below 100% a 1px element (e.g. a pixel image carrying
+// alt text) measures about 0.9px. Elements that aren't rendered at all have no client rects.
 function documentRect(f: Finding): DocRect | null {
   const b = f.location.bbox;
-  if (b && b[2] >= 1 && b[3] >= 1) return { x: b[0], y: b[1], w: b[2], h: b[3] };
-  const r = resolveElement(f)?.getBoundingClientRect();
-  if (r && r.width >= 1 && r.height >= 1) return { x: r.left + window.scrollX, y: r.top + window.scrollY, w: r.width, h: r.height };
+  if (b && b[2] > 0 && b[3] > 0) return { x: b[0], y: b[1], w: b[2], h: b[3] };
+  const el = resolveElement(f);
+  if (!el || el.getClientRects().length === 0) return null;
+  const r = el.getBoundingClientRect();
+  if (r.width > 0 && r.height > 0) return { x: r.left + window.scrollX, y: r.top + window.scrollY, w: r.width, h: r.height };
   return null;
 }
 
