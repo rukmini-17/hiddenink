@@ -11,5 +11,11 @@ Append-only. Write 2–4 lines under your own heading after each task.
   zero-width runs/scatter (binary messages decoded), bidi overrides, and variation-selector smuggling (decoded).
   Flag emoji, emoji ZWJ, single emoji selectors and Persian/Indic ZWNJ are left alone. **Nisha:** paste guard can
   use `scanText(text).visibleText` for "Paste clean". `aiScore` is 0 until R3; use `flagged` for now.
+- **R1 done** (branch `rukmini/r1-web-engine`): `scanDocument` detects all 8 web techniques with the sr-only,
+  short-menu, background-image and `<select>` exceptions. `scanClipboardHtml` also works now (inline styles only).
+  A **first R3 scorer** is in (`core/src/scorer/config.ts`), so `aiScore` and `reasons` are real everywhere.
+  **Nisha:** show only `flagged` findings. Web `bbox` is `[x, y, w, h]` in document CSS px (not viewport), and
+  `selector` works with `querySelector`. For paste guard, run both `scanText` and `scanClipboardHtml` and use the
+  HTML one's `visibleText` when it has findings. Web tests run in installed Chrome (`pnpm test`).
 
 ## Nisha
