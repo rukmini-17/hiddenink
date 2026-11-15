@@ -2,6 +2,7 @@
 import Fastify, { type FastifyInstance } from "fastify";
 import { config } from "./config.js";
 import { safeFetch } from "./safeFetch.js";
+import { checkAction, type CheckRequest } from "./checkAction.js";
 import { handleMcpRequest } from "./mcp.js";
 
 export function createApp(): FastifyInstance {
@@ -29,6 +30,20 @@ export function createApp(): FastifyInstance {
     } catch (err) {
       req.log.error({ err }, "safe-fetch failed");
       return reply.code(502).send({ error: `could not fetch ${url}` });
+    }
+  });
+
+  app.post("/api/check-action", async (req, reply) => {
+    const body = req.body as Partial<CheckRequest> | undefined;
+    if (!body || typeof body.tool !== "string" || typeof body.input !== "object" || !body.input) {
+      return reply.code(400).send({ error: "body must be { tool: string, input: object }" });
+    }
+    try {
+      return await checkAction({ tool: body.tool, input: body.input });
+    } catch (err) {
+      req.log.error({ err }, "check-action failed");
+      // Fail open: a checker error must not block the agent.
+      return { allow: true, reason: "check-action error; allowed" };
     }
   });
 

@@ -14,8 +14,9 @@ From the demo project folder (where you run `claude`):
 
 ```bash
 cp /path/to/hiddenink/agent-guard/.mcp.json       ./.mcp.json
-mkdir -p .claude
+mkdir -p .claude/hooks
 cp /path/to/hiddenink/agent-guard/settings.json   ./.claude/settings.json
+cp /path/to/hiddenink/agent-guard/hook.py         ./.claude/hooks/hook.py
 export HIDDENINK_TOKEN="$HIDDENINK_API_KEY"   # same value the server uses
 ```
 
@@ -36,6 +37,10 @@ claude mcp add --transport http hiddenink http://localhost:8787/mcp \
 - `permissions.deny: ["WebFetch", "Bash(curl *)", "Bash(wget *)"]` — removes the built-in
   web fetch and blocks shell fetches, so the only way to read a page is `safe_fetch`.
 - `permissions.allow: ["mcp__hiddenink__*"]` — auto-approves the HiddenInk MCP tools.
+- `hooks.PreToolUse` (matcher `Bash|Edit|Write`) runs `hook.py`, which sends each install
+  command / dependency-file edit to `POST /api/check-action` (Layer 2) and **denies** it
+  (current `permissionDecision: "deny"` form) when it installs a package the documentation
+  never justified. The hook fails open on any error, so it can't break the session.
 
 Claude Code asks you to approve a project-scoped MCP server the first time. Reset with
 `claude mcp reset-project-choices`.

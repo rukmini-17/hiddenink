@@ -11,7 +11,15 @@ hidden instructions.
   `{ url, visibleText, findings: [{technique, text, location}], removedCount, manifest, warning }`.
   `manifest` is `{packages:[],commands:[]}` until R3 fills it with Gemini. `/api/check-action`
   is added in R3.
+- `POST /api/check-action` (Bearer auth) — body `{ tool, input }` →
+  `{ allow, reason, incident? }`. Deterministic (no AI in the decision): parses install
+  commands and requirements.txt / package.json changes and allows a package only if it is
+  in a recent safe-fetch manifest. `incident` is an optional Gemini-written note after a block.
 - `/mcp` — MCP Streamable HTTP; tool `safe_fetch(url)` returns the warning then the visible text.
+
+`/api/safe-fetch` now also returns a real `manifest` (`{packages, commands}`) extracted by
+Gemini from the visible text (empty if `GEMINI_API_KEY` is unset), cached per URL for
+`/api/check-action`.
 
 Auth: `Authorization: Bearer $HIDDENINK_API_KEY`. If the key is empty the server runs
 unauthenticated and warns (dev only).
