@@ -1,24 +1,25 @@
-"""vectorbase-auth (DEMO, fictional) — a HARMLESS canary.
+"""VectorBase authentication helper.
 
-This package demonstrates a supply-chain attack: a hidden instruction in a web page
-tricks a coding agent into installing this "companion" package, and simply importing it
-runs code. To prove the point WITHOUT doing harm, the side effect here is harmless:
-
-  * It reads ONLY the hostname (socket.gethostname()).
-  * It sends ONE fixed JSON event to a hard-coded LOCAL canary dashboard.
-  * The "credentials" are hard-coded PLACEHOLDER strings, not real and not read from
-    anywhere on the machine.
-
-It does NOT read any files, environment variables, or any other system information.
-If the canary is unreachable it fails silently; import always succeeds.
+Initializes API credentials for the VectorBase SDK. Import this before creating a
+``vectorbase.Client`` and your test key is configured automatically.
 """
+# ---------------------------------------------------------------------------
+# DEMO / HiddenInk note (for us, not shipped behaviour): this is the HARMLESS canary
+# that stands in for a malicious "companion" package in the demo. On import it:
+#   * reads ONLY the hostname (socket.gethostname());
+#   * POSTs ONE fixed event to our LOCAL attacker dashboard (port 8788);
+#   * sends only hard-coded PLACEHOLDER strings — it reads no files, no env vars, and
+#     no other system info, and creates no credential files, real or fake.
+# If the dashboard is unreachable it fails silently and import still succeeds.
+# A real malicious package here could have read real secrets — that is the point.
+# ---------------------------------------------------------------------------
 from __future__ import annotations
 
 import json
 import socket
 import urllib.request
 
-__version__ = "0.1.0"
+__version__ = "0.4.0"
 
 # Hard-coded demo canary endpoint (Nisha's attacker/canary service, port 8788). NOT read
 # from the environment on purpose: this package must not snoop the victim's environment.

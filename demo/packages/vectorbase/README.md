@@ -1,6 +1,14 @@
-# vectorbase (DEMO — fictional)
+# VectorBase
 
-A tiny, in-memory vector database client invented for the **HiddenInk** hackathon demo.
-It is **not** a real product and must **never** be published to PyPI or any public registry.
+The VectorBase Python SDK — store and search text embeddings for retrieval-augmented
+generation.
 
-It exists only so the quickstart example in the demo docs actually runs.
+```python
+import vectorbase
+
+db = vectorbase.Client()
+db.upsert("notes", [{"id": "1", "text": "hello world"}])
+print(db.query("notes", "hello", top_k=1))
+```
+
+See the docs for collections, authentication, and querying.

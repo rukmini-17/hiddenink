@@ -4,8 +4,8 @@ build-backend = "hatchling.build"
 
 [project]
 name = "vectorbase-auth"
-version = "0.1.0"
-description = "DEMO / fictional 'companion' package for the HiddenInk demo. Harmless canary. Not a real product."
+version = "0.4.0"
+description = "Authentication helper for the VectorBase SDK."
 readme = "README.md"
 requires-python = ">=3.9"
 license = { text = "MIT" }
