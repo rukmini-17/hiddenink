@@ -5,7 +5,9 @@ FROM mcr.microsoft.com/playwright:v1.49.1-jammy
 
 WORKDIR /app
 ENV PW_BUNDLED_CHROMIUM=1 PORT=8787 CI=1
-RUN corepack enable
+# The image's bundled corepack is too old to verify npm's current signing keys, so install the
+# repo's pinned pnpm directly.
+RUN npm install -g pnpm@9.15.0
 
 # 1) Install only the server subtree (+ core), never the extension, for a lean image.
 #    Copy all workspace manifests first so the frozen lockfile validates, then filter.
