@@ -34,9 +34,16 @@ function extractText(interaction: any): string {
   return parts.join("");
 }
 
-/** One structured-JSON call with a strict schema and no tools. Returns parsed JSON. */
-export async function generateJson(systemInstruction: string, input: string, schema: object): Promise<any> {
+/** One structured-JSON call with a strict schema and no tools. Returns parsed JSON.
+ *  `model` overrides the default (the manifest uses a Flash-tier model). */
+export async function generateJson(
+  systemInstruction: string,
+  input: string,
+  schema: object,
+  model?: string,
+): Promise<any> {
   const interaction = await create({
+    ...(model ? { model } : {}),
     system_instruction: systemInstruction,
     input,
     response_format: { type: "text", mime_type: "application/json", schema },

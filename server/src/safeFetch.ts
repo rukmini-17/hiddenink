@@ -2,7 +2,7 @@
  *  and return only the visible text plus a warning. The core engine does the detection. */
 import type { ScanResult } from "@hiddenink/core";
 import { getBrowser, coreIife } from "./browser.js";
-import { extractManifest } from "./manifest.js";
+import { extractManifest, type Manifest } from "./manifest.js";
 import { remember } from "./manifestCache.js";
 
 export type SafeFetchFinding = {
@@ -16,7 +16,7 @@ export type SafeFetchResult = {
   visibleText: string;
   findings: SafeFetchFinding[];
   removedCount: number;
-  manifest: { packages: string[]; commands: string[] };
+  manifest: Manifest;
   warning: string;
 };
 
