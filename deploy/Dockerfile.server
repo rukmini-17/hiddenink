@@ -1,0 +1,28 @@
+# HiddenInk server (Layer 1 safe-fetch + Layer 2 + MCP). Uses the official Playwright image
+# so Chromium and its system deps are already present; the server runs the bundled Chromium
+# (PW_BUNDLED_CHROMIUM=1), not a channel install.
+FROM mcr.microsoft.com/playwright:v1.49.1-jammy
+
+WORKDIR /app
+ENV PW_BUNDLED_CHROMIUM=1 PORT=8787 CI=1
+# The image's bundled corepack is too old to verify npm's current signing keys, so install the
+# repo's pinned pnpm directly.
+RUN npm install -g pnpm@9.15.0
+
+# 1) Install only the server subtree (+ core), never the extension, for a lean image.
+#    Copy all workspace manifests first so the frozen lockfile validates, then filter.
+COPY pnpm-workspace.yaml pnpm-lock.yaml package.json ./
+COPY core/package.json ./core/package.json
+COPY server/package.json ./server/package.json
+COPY extension/package.json ./extension/package.json
+RUN pnpm install --frozen-lockfile --filter "@hiddenink/server..." --filter "@hiddenink/core"
+
+# 2) Copy sources and build the core IIFE the server injects.
+COPY core ./core
+COPY server ./server
+RUN pnpm --filter @hiddenink/core build
+
+EXPOSE 8787
+# Secrets (HIDDENINK_TOKEN, GEMINI_API_KEY) come from the runtime env (compose env_file),
+# never baked into the image.
+CMD ["pnpm", "--filter", "@hiddenink/server", "start"]

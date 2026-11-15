@@ -1,0 +1,13 @@
+# Keep secrets and heavy/rebuildable dirs out of every Docker build context.
+.env
+.env.*
+!.env.example
+.git
+**/node_modules
+**/.venv
+**/dist
+**/.output
+**/.wxt
+**/__pycache__
+*.log
+eval/results

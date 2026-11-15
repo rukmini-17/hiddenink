@@ -137,7 +137,7 @@ export function XrayOverlay({ findings, visibleText, onClose }: { findings: Find
             tabIndex={0}
             data-hiddenink-id={p.finding.id}
             data-active={activeId === p.finding.id}
-            style={{ left: p.rect.x, top: topOf(p), width: p.width }}
+            style={{ left: p.rect.x, top: topOf(p), width: p.width, ...(p.font && { fontFamily: p.font.family, fontSize: p.font.size }) }}
             onClick={() => openCard(p.finding)}
             onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && openCard(p.finding)}
           >

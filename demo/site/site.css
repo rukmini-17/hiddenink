@@ -41,6 +41,10 @@ p code { font-size: 13.5px; background: #f1f5f9; border-radius: 4px; padding: 1p
 /* Same colour as the page: a human can't see it, an AI reading the page can. */
 .ai-note { color: #ffffff; margin: 16px 0; }
 
+/* Hidden tokens smuggled inside code blocks: invisible to a human and excluded from the
+   Copy button (innerText), but present in the HTML source, so text extraction sees them. */
+.x { display: none; }
+
 .foot { margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--line); font-size: 12.5px; color: var(--faint); }
 
 @media (max-width: 860px) {

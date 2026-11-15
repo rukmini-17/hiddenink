@@ -107,6 +107,15 @@ and sets `flagged = flagged || score ≥ 0.5`.
 Limitation: keyword heuristics miss paraphrased or non-English instructions. That's the job of the
 Stage 2 classifier.
 
+**Code-injection rule** (`scorer/codeInjection.ts`): hidden text is forced `flagged` — regardless of
+the AI-aimed score — when it is **inside a `<code>`/`<pre>` block**, or when it **carries an install
+command or import** (`pip/npm/uv/... install`, a line-anchored `import module` / `from module import`,
+or `require("…")`). This catches the supply-chain attack where a hidden ` vectorbase-auth` is smuggled
+into a visible `pip install vectorbase` line (so text extraction yields `pip install vectorbase
+vectorbase-auth`) or a hidden `import vectorbase_auth` is slipped into the example — payloads that score
+~0 on the AI-aimed heuristics but are dangerous to a coding agent. The import pattern is line-anchored so
+ordinary prose ("import your contacts") doesn't match; eval shows 0/21 benign false positives.
+
 ### Testing
 
 `core/vitest.workspace.ts` has three projects: **unit** (jsdom: Unicode, scorer, API shape),

@@ -1,0 +1,4 @@
+{
+  "packages": ["vectorbase"],
+  "commands": ["pip install vectorbase", "python main.py"]
+}

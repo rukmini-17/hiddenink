@@ -1,0 +1,15 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "vectorbase"
+version = "2.4.0"
+description = "VectorBase Python SDK — store and search text embeddings for RAG."
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+authors = [{ name = "HiddenInk Demo" }]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/vectorbase"]

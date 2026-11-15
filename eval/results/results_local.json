@@ -2,8 +2,8 @@
   "meta": {
     "layer": "local",
     "layer_title": "rules-only baseline (local engine)",
-    "date": "2026-11-14 05:46 UTC",
-    "git_commit": "bfdea34",
+    "date": "2026-11-15 02:10 UTC",
+    "git_commit": "bff1aa2",
     "chrome_version": "157.0.8103.78",
     "corpus_files": 81,
     "corpus_counts": {
@@ -12,8 +12,8 @@
       "hidden_benign": 2
     },
     "repeat": 3,
-    "pdf_cold_start_ms": 34.4,
-    "bundle_bytes": 1816471
+    "pdf_cold_start_ms": 71,
+    "bundle_bytes": 1817450
   },
   "metrics": {
     "detection": {
@@ -473,21 +473,21 @@
     "timing": {
       "all": {
         "files": 81,
-        "median_ms": 0.5,
-        "max_ms": 31.7,
-        "slowest_file": "pdf_benign_fine_print"
+        "median_ms": 1,
+        "max_ms": 62.7,
+        "slowest_file": "pdf_benign_academic_paper"
       },
       "html": {
         "files": 55,
-        "median_ms": 0.5,
-        "max_ms": 1.1,
+        "median_ms": 0.9,
+        "max_ms": 3.5,
         "slowest_file": "demo_job_listing_poisoned"
       },
       "pdf": {
         "files": 26,
-        "median_ms": 15.4,
-        "max_ms": 31.7,
-        "slowest_file": "pdf_benign_fine_print"
+        "median_ms": 14.6,
+        "max_ms": 62.7,
+        "slowest_file": "pdf_benign_academic_paper"
       }
     }
   },
@@ -515,7 +515,7 @@
       ],
       "unflagged_techniques": [],
       "max_ai_score": 0.86,
-      "scan_ms": 1.1,
+      "scan_ms": 3.5,
       "error": null,
       "findings": [
         {
@@ -598,7 +598,7 @@
       "flagged_techniques": [],
       "unflagged_techniques": [],
       "max_ai_score": 0.0,
-      "scan_ms": 8.9,
+      "scan_ms": 15.6,
       "error": null,
       "findings": [],
       "outcome": "TN",
@@ -614,7 +614,7 @@
       "flagged_techniques": [],
       "unflagged_techniques": [],
       "max_ai_score": 0.0,
-      "scan_ms": 15.4,
+      "scan_ms": 13.5,
       "error": null,
       "findings": [],
       "outcome": "TN",
@@ -630,7 +630,7 @@
       "flagged_techniques": [],
       "unflagged_techniques": [],
       "max_ai_score": 0.0,
-      "scan_ms": 15.1,
+      "scan_ms": 11.8,
       "error": null,
       "findings": [],
       "outcome": "TN",
@@ -646,7 +646,7 @@
       "flagged_techniques": [],
       "unflagged_techniques": [],
       "max_ai_score": 0.0,
-      "scan_ms": 16.1,
+      "scan_ms": 14.2,
       "error": null,
       "findings": [],
       "outcome": "TN",
@@ -662,7 +662,7 @@
       "flagged_techniques": [],
       "unflagged_techniques": [],
       "max_ai_score": 0.0,
-      "scan_ms": 15.7,
+      "scan_ms": 15,
       "error": null,
       "findings": [],
       "outcome": "TN",
@@ -682,7 +682,7 @@
       ],
       "unflagged_techniques": [],
       "max_ai_score": 0.95,
-      "scan_ms": 14.7,
+      "scan_ms": 13.5,
       "error": null,
       "findings": [
         {
@@ -710,7 +710,7 @@
       "flagged_techniques": [],
       "unflagged_techniques": [],
       "max_ai_score": 0.0,
-      "scan_ms": 26.8,
+      "scan_ms": 62.7,
       "error": null,
       "findings": [],
       "outcome": "TN",
@@ -726,7 +726,7 @@
       "flagged_techniques": [],
       "unflagged_techniques": [],
       "max_ai_score": 0.0,
-      "scan_ms": 31.7,
+      "scan_ms": 20.3,
       "error": null,
       "findings": [],
       "outcome": "TN",
@@ -742,7 +742,7 @@
       "flagged_techniques": [],
       "unflagged_techniques": [],
       "max_ai_score": 0.0,
-      "scan_ms": 16,
+      "scan_ms": 15,
       "error": null,
       "findings": [],
       "outcome": "TN",
@@ -758,7 +758,7 @@
       "flagged_techniques": [],
       "unflagged_techniques": [],
       "max_ai_score": 0.0,
-      "scan_ms": 13.4,
+      "scan_ms": 21.2,
       "error": null,
       "findings": [],
       "outcome": "TN",
@@ -774,7 +774,7 @@
       "flagged_techniques": [],
       "unflagged_techniques": [],
       "max_ai_score": 0.0,
-      "scan_ms": 28.3,
+      "scan_ms": 57.9,
       "error": null,
       "findings": [],
       "outcome": "TN",
@@ -794,7 +794,7 @@
         "pdf_invisible"
       ],
       "max_ai_score": 0,
-      "scan_ms": 13.9,
+      "scan_ms": 12.5,
       "error": null,
       "findings": [],
       "outcome": "TN",
@@ -814,7 +814,7 @@
         "pdf_invisible"
       ],
       "max_ai_score": 0.41,
-      "scan_ms": 14.4,
+      "scan_ms": 23,
       "error": null,
       "findings": [],
       "outcome": "FN",
@@ -834,7 +834,7 @@
         "pdf_invisible"
       ],
       "max_ai_score": 0,
-      "scan_ms": 14.9,
+      "scan_ms": 11.6,
       "error": null,
       "findings": [],
       "outcome": "FN",
@@ -854,7 +854,7 @@
         "pdf_invisible"
       ],
       "max_ai_score": 0.35,
-      "scan_ms": 15.2,
+      "scan_ms": 12.5,
       "error": null,
       "findings": [],
       "outcome": "FN",
@@ -874,7 +874,7 @@
       ],
       "unflagged_techniques": [],
       "max_ai_score": 0.9,
-      "scan_ms": 16,
+      "scan_ms": 13.9,
       "error": null,
       "findings": [
         {
@@ -906,7 +906,7 @@
       ],
       "unflagged_techniques": [],
       "max_ai_score": 0.83,
-      "scan_ms": 15.4,
+      "scan_ms": 14.2,
       "error": null,
       "findings": [
         {
@@ -938,7 +938,7 @@
         "pdf_invisible"
       ],
       "max_ai_score": 0.35,
-      "scan_ms": 15.5,
+      "scan_ms": 14.9,
       "error": null,
       "findings": [],
       "outcome": "FN",
@@ -958,7 +958,7 @@
       ],
       "unflagged_techniques": [],
       "max_ai_score": 0.92,
-      "scan_ms": 15.8,
+      "scan_ms": 14.6,
       "error": null,
       "findings": [
         {
@@ -1010,7 +1010,7 @@
       ],
       "unflagged_techniques": [],
       "max_ai_score": 0.9,
-      "scan_ms": 15.6,
+      "scan_ms": 15,
       "error": null,
       "findings": [
         {
@@ -1042,7 +1042,7 @@
       ],
       "unflagged_techniques": [],
       "max_ai_score": 0.83,
-      "scan_ms": 15.9,
+      "scan_ms": 14.7,
       "error": null,
       "findings": [
         {
@@ -1074,7 +1074,7 @@
         "pdf_tiny_font"
       ],
       "max_ai_score": 0.41,
-      "scan_ms": 14.9,
+      "scan_ms": 14.4,
       "error": null,
       "findings": [],
       "outcome": "FN",
@@ -1094,7 +1094,7 @@
       ],
       "unflagged_techniques": [],
       "max_ai_score": 0.92,
-      "scan_ms": 15.7,
+      "scan_ms": 14.6,
       "error": null,
       "findings": [
         {
@@ -1126,7 +1126,7 @@
       ],
       "unflagged_techniques": [],
       "max_ai_score": 0.92,
-      "scan_ms": 15.4,
+      "scan_ms": 13.9,
       "error": null,
       "findings": [
         {
@@ -1158,7 +1158,7 @@
       ],
       "unflagged_techniques": [],
       "max_ai_score": 0.8,
-      "scan_ms": 14.6,
+      "scan_ms": 15.2,
       "error": null,
       "findings": [
         {
@@ -1190,7 +1190,7 @@
       ],
       "unflagged_techniques": [],
       "max_ai_score": 0.88,
-      "scan_ms": 0.5,
+      "scan_ms": 1.1,
       "error": null,
       "findings": [
         {
@@ -1220,7 +1220,7 @@
       "flagged_techniques": [],
       "unflagged_techniques": [],
       "max_ai_score": 0.0,
-      "scan_ms": 0.4,
+      "scan_ms": 0.9,
       "error": null,
       "findings": [],
       "outcome": "FN",
@@ -1240,7 +1240,7 @@
       ],
       "unflagged_techniques": [],
       "max_ai_score": 0.92,
-      "scan_ms": 0.5,
+      "scan_ms": 1.1,
       "error": null,
       "findings": [
         {
@@ -1270,7 +1270,7 @@
       "flagged_techniques": [],
       "unflagged_techniques": [],
       "max_ai_score": 0.0,
-      "scan_ms": 0.5,
+      "scan_ms": 1.1,
       "error": null,
       "findings": [],
       "outcome": "FN",
@@ -1290,7 +1290,7 @@
       ],
       "unflagged_techniques": [],
       "max_ai_score": 0.9,
-      "scan_ms": 0.5,
+      "scan_ms": 1.1,
       "error": null,
       "findings": [
         {
@@ -1320,7 +1320,7 @@
         "bidi"
       ],
       "max_ai_score": 0,
-      "scan_ms": 0.3,
+      "scan_ms": 0.6,
       "error": null,
       "findings": [],
       "outcome": "TN",
@@ -1336,7 +1336,7 @@
       "flagged_techniques": [],
       "unflagged_techniques": [],
       "max_ai_score": 0.0,
-      "scan_ms": 0.5,
+      "scan_ms": 0.9,
       "error": null,
       "findings": [],
       "outcome": "TN",
@@ -1352,7 +1352,7 @@
       "flagged_techniques": [],
       "unflagged_techniques": [],
       "max_ai_score": 0.0,
-      "scan_ms": 0.4,
+      "scan_ms": 0.9,
       "error": null,
       "findings": [],
       "outcome": "TN",
@@ -1370,7 +1370,7 @@
         "display_none"
       ],
       "max_ai_score": 0,
-      "scan_ms": 0.6,
+      "scan_ms": 1,
       "error": null,
       "findings": [],
       "outcome": "TN",
@@ -1386,7 +1386,7 @@
       "flagged_techniques": [],
       "unflagged_techniques": [],
       "max_ai_score": 0.0,
-      "scan_ms": 0.4,
+      "scan_ms": 0.8,
       "error": null,
       "findings": [],
       "outcome": "TN",
@@ -1402,7 +1402,7 @@
       "flagged_techniques": [],
       "unflagged_techniques": [],
       "max_ai_score": 0.0,
-      "scan_ms": 0.6,
+      "scan_ms": 1.1,
       "error": null,
       "findings": [],
       "outcome": "TN",
@@ -1418,7 +1418,7 @@
       "flagged_techniques": [],
       "unflagged_techniques": [],
       "max_ai_score": 0.0,
-      "scan_ms": 0.3,
+      "scan_ms": 0.7,
       "error": null,
       "findings": [],
       "outcome": "TN",
@@ -1434,7 +1434,7 @@
       "flagged_techniques": [],
       "unflagged_techniques": [],
       "max_ai_score": 0.0,
-      "scan_ms": 0.3,
+      "scan_ms": 0.5,
       "error": null,
       "findings": [],
       "outcome": "TN",
@@ -1450,7 +1450,7 @@
       "flagged_techniques": [],
       "unflagged_techniques": [],
       "max_ai_score": 0.0,
-      "scan_ms": 0.4,
+      "scan_ms": 0.6,
       "error": null,
       "findings": [],
       "outcome": "TN",
@@ -1468,7 +1468,7 @@
         "offscreen"
       ],
       "max_ai_score": 0,
-      "scan_ms": 0.5,
+      "scan_ms": 1.1,
       "error": null,
       "findings": [],
       "outcome": "TN",
@@ -1486,7 +1486,7 @@
         "display_none"
       ],
       "max_ai_score": 0,
-      "scan_ms": 0.4,
+      "scan_ms": 1,
       "error": null,
       "findings": [],
       "outcome": "TN",
@@ -1508,7 +1508,7 @@
         "bidi"
       ],
       "max_ai_score": 0,
-      "scan_ms": 0.5,
+      "scan_ms": 1.1,
       "error": null,
       "findings": [
         {
@@ -1538,7 +1538,7 @@
       ],
       "unflagged_techniques": [],
       "max_ai_score": 0.88,
-      "scan_ms": 0.5,
+      "scan_ms": 1,
       "error": null,
       "findings": [
         {
@@ -1570,7 +1570,7 @@
         "clipped"
       ],
       "max_ai_score": 0.41,
-      "scan_ms": 0.5,
+      "scan_ms": 1,
       "error": null,
       "findings": [],
       "outcome": "FN",
@@ -1590,7 +1590,7 @@
       ],
       "unflagged_techniques": [],
       "max_ai_score": 0.83,
-      "scan_ms": 0.4,
+      "scan_ms": 0.9,
       "error": null,
       "findings": [
         {
@@ -1622,7 +1622,7 @@
         "clipped"
       ],
       "max_ai_score": 0,
-      "scan_ms": 0.4,
+      "scan_ms": 0.9,
       "error": null,
       "findings": [],
       "outcome": "FN",
@@ -1642,7 +1642,7 @@
       ],
       "unflagged_techniques": [],
       "max_ai_score": 0.92,
-      "scan_ms": 0.6,
+      "scan_ms": 1.1,
       "error": null,
       "findings": [
         {
@@ -1672,7 +1672,7 @@
       "flagged_techniques": [],
       "unflagged_techniques": [],
       "max_ai_score": 0.0,
-      "scan_ms": 0.6,
+      "scan_ms": 1.1,
       "error": null,
       "findings": [],
       "outcome": "FN",
@@ -1692,7 +1692,7 @@
       ],
       "unflagged_techniques": [],
       "max_ai_score": 0.9,
-      "scan_ms": 0.5,
+      "scan_ms": 1,
       "error": null,
       "findings": [
         {
@@ -1724,7 +1724,7 @@
         "clipped"
       ],
       "max_ai_score": 0.35,
-      "scan_ms": 0.5,
+      "scan_ms": 0.9,
       "error": null,
       "findings": [],
       "outcome": "FN",
@@ -1744,7 +1744,7 @@
       ],
       "unflagged_techniques": [],
       "max_ai_score": 0.9,
-      "scan_ms": 0.5,
+      "scan_ms": 1,
       "error": null,
       "findings": [
         {
@@ -1776,7 +1776,7 @@
         "display_none"
       ],
       "max_ai_score": 0.35,
-      "scan_ms": 0.5,
+      "scan_ms": 0.9,
       "error": null,
       "findings": [],
       "outcome": "FN",
@@ -1796,7 +1796,7 @@
       ],
       "unflagged_techniques": [],
       "max_ai_score": 0.83,
-      "scan_ms": 0.4,
+      "scan_ms": 1,
       "error": null,
       "findings": [
         {
@@ -1828,7 +1828,7 @@
         "display_none"
       ],
       "max_ai_score": 0,
-      "scan_ms": 0.4,
+      "scan_ms": 0.8,
       "error": null,
       "findings": [],
       "outcome": "FN",
@@ -1848,7 +1848,7 @@
         "low_contrast"
       ],
       "max_ai_score": 0,
-      "scan_ms": 0.4,
+      "scan_ms": 0.9,
       "error": null,
       "findings": [],
       "outcome": "TN",
@@ -1868,7 +1868,7 @@
       ],
       "unflagged_techniques": [],
       "max_ai_score": 0.9,
-      "scan_ms": 0.5,
+      "scan_ms": 1,
       "error": null,
       "findings": [
         {
@@ -1898,7 +1898,7 @@
       "flagged_techniques": [],
       "unflagged_techniques": [],
       "max_ai_score": 0.0,
-      "scan_ms": 0.5,
+      "scan_ms": 0.9,
       "error": null,
       "findings": [],
       "outcome": "FN",
@@ -1918,7 +1918,7 @@
       ],
       "unflagged_techniques": [],
       "max_ai_score": 0.83,
-      "scan_ms": 0.4,
+      "scan_ms": 0.9,
       "error": null,
       "findings": [
         {
@@ -1950,7 +1950,7 @@
         "low_contrast"
       ],
       "max_ai_score": 0,
-      "scan_ms": 0.6,
+      "scan_ms": 0.9,
       "error": null,
       "findings": [],
       "outcome": "FN",
@@ -1970,7 +1970,7 @@
       ],
       "unflagged_techniques": [],
       "max_ai_score": 0.9,
-      "scan_ms": 0.5,
+      "scan_ms": 0.9,
       "error": null,
       "findings": [
         {
@@ -2002,7 +2002,7 @@
         "low_contrast"
       ],
       "max_ai_score": 0.35,
-      "scan_ms": 0.5,
+      "scan_ms": 0.9,
       "error": null,
       "findings": [],
       "outcome": "FN",
@@ -2022,7 +2022,7 @@
       ],
       "unflagged_techniques": [],
       "max_ai_score": 0.92,
-      "scan_ms": 0.5,
+      "scan_ms": 1,
       "error": null,
       "findings": [
         {
@@ -2054,7 +2054,7 @@
         "low_contrast"
       ],
       "max_ai_score": 0,
-      "scan_ms": 0.5,
+      "scan_ms": 1.1,
       "error": null,
       "findings": [],
       "outcome": "FN",
@@ -2074,7 +2074,7 @@
       ],
       "unflagged_techniques": [],
       "max_ai_score": 0.88,
-      "scan_ms": 0.5,
+      "scan_ms": 1,
       "error": null,
       "findings": [
         {
@@ -2106,7 +2106,7 @@
         "offscreen"
       ],
       "max_ai_score": 0.41,
-      "scan_ms": 0.6,
+      "scan_ms": 0.9,
       "error": null,
       "findings": [],
       "outcome": "FN",
@@ -2126,7 +2126,7 @@
       ],
       "unflagged_techniques": [],
       "max_ai_score": 0.92,
-      "scan_ms": 0.5,
+      "scan_ms": 1,
       "error": null,
       "findings": [
         {
@@ -2158,7 +2158,7 @@
         "offscreen"
       ],
       "max_ai_score": 0,
-      "scan_ms": 0.5,
+      "scan_ms": 1,
       "error": null,
       "findings": [],
       "outcome": "FN",
@@ -2178,7 +2178,7 @@
       ],
       "unflagged_techniques": [],
       "max_ai_score": 0.88,
-      "scan_ms": 0.5,
+      "scan_ms": 1,
       "error": null,
       "findings": [
         {
@@ -2210,7 +2210,7 @@
         "tiny_font"
       ],
       "max_ai_score": 0.41,
-      "scan_ms": 0.5,
+      "scan_ms": 1.1,
       "error": null,
       "findings": [],
       "outcome": "FN",
@@ -2230,7 +2230,7 @@
       ],
       "unflagged_techniques": [],
       "max_ai_score": 0.92,
-      "scan_ms": 0.5,
+      "scan_ms": 1,
       "error": null,
       "findings": [
         {
@@ -2262,7 +2262,7 @@
         "tiny_font"
       ],
       "max_ai_score": 0,
-      "scan_ms": 0.5,
+      "scan_ms": 1.1,
       "error": null,
       "findings": [],
       "outcome": "FN",
@@ -2282,7 +2282,7 @@
       ],
       "unflagged_techniques": [],
       "max_ai_score": 0.9,
-      "scan_ms": 0.6,
+      "scan_ms": 0.9,
       "error": null,
       "findings": [
         {
@@ -2314,7 +2314,7 @@
         "transparent"
       ],
       "max_ai_score": 0.35,
-      "scan_ms": 0.5,
+      "scan_ms": 0.9,
       "error": null,
       "findings": [],
       "outcome": "FN",
@@ -2334,7 +2334,7 @@
       ],
       "unflagged_techniques": [],
       "max_ai_score": 0.83,
-      "scan_ms": 0.5,
+      "scan_ms": 0.8,
       "error": null,
       "findings": [
         {
@@ -2366,7 +2366,7 @@
         "transparent"
       ],
       "max_ai_score": 0,
-      "scan_ms": 0.4,
+      "scan_ms": 0.8,
       "error": null,
       "findings": [],
       "outcome": "FN",
@@ -2386,7 +2386,7 @@
       ],
       "unflagged_techniques": [],
       "max_ai_score": 0.92,
-      "scan_ms": 0.4,
+      "scan_ms": 0.9,
       "error": null,
       "findings": [
         {
@@ -2418,7 +2418,7 @@
       ],
       "unflagged_techniques": [],
       "max_ai_score": 0,
-      "scan_ms": 0.6,
+      "scan_ms": 0.9,
       "error": null,
       "findings": [
         {
@@ -2449,7 +2449,7 @@
       ],
       "unflagged_techniques": [],
       "max_ai_score": 0.83,
-      "scan_ms": 0.5,
+      "scan_ms": 0.9,
       "error": null,
       "findings": [
         {
@@ -2481,7 +2481,7 @@
       ],
       "unflagged_techniques": [],
       "max_ai_score": 0.8,
-      "scan_ms": 0.5,
+      "scan_ms": 0.9,
       "error": null,
       "findings": [
         {

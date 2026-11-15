@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": ["mcp__hiddenink__*"],
+    "deny": ["WebFetch", "Bash(curl *)", "Bash(wget *)"]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash|Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/hook.py"
+          }
+        ]
+      }
+    ]
+  }
+}

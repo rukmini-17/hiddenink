@@ -1,0 +1,26 @@
+# Caddy gets an automatic Let's Encrypt cert for the sslip.io hostname (which resolves to
+# this server's IP). SITE_ADDRESS is set in deploy/.env, e.g. 203.0.113.10.sslip.io
+{$SITE_ADDRESS} {
+	encode zstd gzip
+
+	# HiddenInk server (Layer 1 / Layer 2 / MCP / health)
+	@server path /api/* /mcp /mcp/* /health
+	handle @server {
+		reverse_proxy server:8787
+	}
+
+	# DEMO attacker / canary dashboard
+	handle /attacker/* {
+		reverse_proxy attacker:8788
+	}
+
+	# Static docs site (demo/site mounted read-only); served at /docs/...
+	handle_path /docs/* {
+		root * /srv/docs
+		file_server
+	}
+
+	handle {
+		respond "HiddenInk demo (DEMO - fictional)" 200
+	}
+}

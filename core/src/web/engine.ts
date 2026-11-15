@@ -5,6 +5,7 @@
 
 import type { Finding, ScanResult } from "../types";
 import { applyScore } from "../scorer/applyScore";
+import { CODE_INJECTION_REASON, looksLikeCodeInjection } from "../scorer/codeInjection";
 import { scoreAiAimed } from "../scorer/score";
 import { cleanText } from "../unicode/cleanText";
 import { scanUnicode } from "../unicode/scanUnicode";
@@ -75,22 +76,39 @@ function hiddenTextFinding(group: Group, opts: EngineOptions): Finding | null {
 
   const { hiding } = group;
   const aiAimed = scoreAiAimed(text).score >= opts.threshold;
+  // Hidden text inside a code block, or that carries an install command / import, is
+  // dangerous for a coding agent on its own — flag it regardless of the AI-aimed score.
+  const inCode = !!hiding.element.closest?.("code, pre");
+  const codeInjection = inCode || looksLikeCodeInjection(text);
   // Screen-reader-only text is accessibility, not an attack, unless it talks to an AI.
-  if (hiding.srOnly && !aiAimed) return null;
-  // Menus, tabs and modals are display:none all the time; only long or AI-aimed text matters.
-  if (hiding.technique === "display_none" && text.length <= L.displayNoneMinChars && !aiAimed) return null;
+  if (hiding.srOnly && !aiAimed && !codeInjection) return null;
+  // Menus, tabs and modals are display:none all the time; only long, AI-aimed, or
+  // code-injection text matters.
+  if (
+    hiding.technique === "display_none" &&
+    text.length <= L.displayNoneMinChars &&
+    !aiAimed &&
+    !codeInjection
+  )
+    return null;
 
   const reason = hiding.srOnly
     ? "uses the screen-reader-only pattern (normally for accessibility), but the text looks aimed at an AI"
     : `invisible to you: ${hiding.reason}`;
+  const reasons = [reason];
+  if (inCode) {
+    reasons.push(
+      "hidden inside a code block, so a human won't see it but a tool that extracts or copies the code would include it",
+    );
+  }
   return {
     id: "",
     technique: hiding.technique,
     text,
     location: { selector: cssSelector(hiding.element), ...bboxOf(group.boxes, opts.scroll) },
     aiScore: 0, // filled in by applyScore with every other finding
-    flagged: false,
-    reasons: [reason],
+    flagged: codeInjection, // applyScore ORs this with the AI-aimed and install/import rules
+    reasons,
   };
 }
 

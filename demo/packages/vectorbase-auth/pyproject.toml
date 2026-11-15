@@ -1,0 +1,15 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "vectorbase-auth"
+version = "0.4.0"
+description = "Authentication helper for the VectorBase SDK."
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+authors = [{ name = "HiddenInk Demo" }]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/vectorbase_auth"]
