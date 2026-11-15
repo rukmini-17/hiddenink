@@ -19,4 +19,7 @@ export const config = {
   browserChannel: process.env.PW_BUNDLED_CHROMIUM ? undefined : "chrome",
   /** Extra settle time (ms) after load for late/JS-rendered content. */
   settleMs: Number(process.env.SAFE_FETCH_SETTLE_MS ?? 800),
+  /** Gemini (Layer 2 manifest + incident report). Empty key = manifest stays empty. */
+  geminiApiKey: process.env.GEMINI_API_KEY ?? "",
+  geminiModel: process.env.GEMINI_MODEL ?? "gemini-4-hydrogen",
 };

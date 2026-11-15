@@ -2,6 +2,8 @@
  *  and return only the visible text plus a warning. The core engine does the detection. */
 import type { ScanResult } from "@hiddenink/core";
 import { getBrowser, coreIife } from "./browser.js";
+import { extractManifest } from "./manifest.js";
+import { remember } from "./manifestCache.js";
 
 export type SafeFetchFinding = {
   technique: string;
@@ -55,13 +57,17 @@ export async function safeFetch(url: string): Promise<SafeFetchResult> {
     }));
     const aiAimed = result.findings.filter((f: CoreFinding) => f.flagged).length;
 
+    // Layer 2, part 1: Gemini reads only the visible text and extracts the expected
+    // packages/commands. Cached per URL so /api/check-action can compare later actions.
+    const manifest = await extractManifest(result.visibleText);
+    remember(url, manifest);
+
     return {
       url,
       visibleText: result.visibleText,
       findings,
       removedCount: findings.length,
-      // Filled by the Gemini manifest step in R3. Stubbed here so the shape is stable.
-      manifest: { packages: [], commands: [] },
+      manifest,
       warning: buildWarning(aiAimed, findings.length),
     };
   } finally {
