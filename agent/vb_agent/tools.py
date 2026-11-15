@@ -7,15 +7,66 @@ run_command - run a command (pip/python only), cwd = demo folder, local index on
 """
 from __future__ import annotations
 
-import json
 import os
 import shlex
 import subprocess
+from html.parser import HTMLParser
 from pathlib import Path
 
 import httpx
 
 from . import config
+
+# Tags whose text content is dropped (not shown to a reader).
+_SKIP_TAGS = {"script", "style", "noscript", "template", "svg"}
+# Tags that introduce a line break in the extracted text.
+_BLOCK_TAGS = {
+    "p", "div", "br", "li", "ul", "ol", "h1", "h2", "h3", "h4", "h5", "h6",
+    "section", "article", "header", "footer", "nav", "tr", "table", "pre",
+    "blockquote", "title", "head",
+}
+
+
+class _TextExtractor(HTMLParser):
+    """Extract readable text from HTML, the way a typical agent fetch tool does:
+    drop <script>/<style> and all styling, keep the text (including any that was
+    styled invisible), and break lines on block elements."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.parts: list[str] = []
+        self.skip_depth = 0
+
+    def handle_starttag(self, tag, attrs):
+        if tag in _SKIP_TAGS:
+            self.skip_depth += 1
+        elif tag in _BLOCK_TAGS:
+            self.parts.append("\n")
+
+    def handle_startendtag(self, tag, attrs):
+        self.handle_starttag(tag, attrs)
+
+    def handle_endtag(self, tag):
+        if tag in _SKIP_TAGS and self.skip_depth:
+            self.skip_depth -= 1
+        elif tag in _BLOCK_TAGS:
+            self.parts.append("\n")
+
+    def handle_data(self, data):
+        if self.skip_depth == 0:
+            self.parts.append(data)
+
+
+def html_to_text(html: str) -> str:
+    """HTML -> readable plain text. Styling and scripts are dropped; text is kept."""
+    parser = _TextExtractor()
+    parser.feed(html)
+    out: list[str] = []
+    for line in "".join(parser.parts).splitlines():
+        stripped = line.strip()
+        if stripped or (out and out[-1]):  # collapse runs of blank lines
+            out.append(stripped)
+    return "\n".join(out).strip()
 
 # JSON-Schema tool declarations passed to Gemini (interactions API format).
 TOOL_SCHEMAS = [
@@ -97,10 +148,12 @@ class Tools:
             data = r.json()
             warning = data.get("warning", "")
             return (warning + "\n\n" if warning else "") + data.get("visibleText", "")
-        # Unprotected: raw page text, hidden instructions included.
+        # Unprotected: convert HTML to readable text the way a typical agent fetch tool
+        # does. Styling is dropped, so text that was styled invisible is no longer
+        # distinguishable from normal text (hidden instructions included).
         r = httpx.get(url, timeout=30, follow_redirects=True)
         r.raise_for_status()
-        return r.text
+        return html_to_text(r.text)
 
     # --- write_file ---------------------------------------------------------
     def write_file(self, rel_path: str, content: str) -> str:
