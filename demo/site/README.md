@@ -6,7 +6,7 @@ On the server, Caddy serves this folder at `/docs/`. Locally: `extension/scripts
 
 | Page | Hidden content |
 |---|---|
-| `quickstart.html` | The white-on-white paragraph `#ai-note` between step 2 and step 3 (layer 1 demo). Its wording is a **placeholder** until Rukmini's tested R1 wording is copied in. |
+| `quickstart.html` | The white-on-white paragraph `#ai-note` between step 2 and step 3 (layer 1 demo). Its wording is Rukmini's tested R1 wording. |
 | `quickstart-v2.html` | Same visible page, no hidden text yet. Rukmini puts the layer 2 trick in `<div id="layer2-slot">`. |
 
 The visible steps only ever mention `vectorbase`. Keep both pages' visible content identical. `site.css` and
