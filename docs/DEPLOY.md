@@ -6,6 +6,44 @@ into `deploy/.env` on the server only** — never committed, never in an image.
 
 > **Destroy the server after judging.** It's a short-lived demo box.
 
+## Live deployment
+
+**URL: <https://144.202.14.10.sslip.io>** (Vultr, New Jersey, 2 vCPU / 4 GB, Ubuntu 24.04). Firewall
+(ufw) allows only 22, 80 and 443. The HiddenInk token is in `deploy/.env` on the server only; it is
+shared privately, never in the repo or a group chat.
+
+| What | Address |
+|---|---|
+| Health | <https://144.202.14.10.sslip.io/health> |
+| Docs page (layer 1 demo) | <https://144.202.14.10.sslip.io/docs/quickstart.html> |
+| Docs page (layer 2 demo) | <https://144.202.14.10.sslip.io/docs/quickstart-v2.html> |
+| Attacker dashboard | <https://144.202.14.10.sslip.io/attacker/> |
+| MCP endpoint | `https://144.202.14.10.sslip.io/mcp` |
+
+Verify from a laptop (all four must match):
+
+```bash
+curl -s https://144.202.14.10.sslip.io/health; echo                                  # {"ok":true}
+curl -s -o /dev/null -w "docs %{http_code}\n" https://144.202.14.10.sslip.io/docs/quickstart.html   # docs 200
+curl -s -o /dev/null -w "attacker %{http_code}\n" https://144.202.14.10.sslip.io/attacker/          # attacker 200
+curl -s -o /dev/null -w "api without token %{http_code}\n" -X POST https://144.202.14.10.sslip.io/api/safe-fetch \
+  -H 'content-type: application/json' -d '{"url":"https://example.com"}'                # api without token 401
+```
+
+Authenticated safe-fetch (set `TOKEN` to the HiddenInk token first, without echoing it):
+
+```bash
+curl -s -X POST https://144.202.14.10.sslip.io/api/safe-fetch \
+  -H "authorization: Bearer $TOKEN" -H 'content-type: application/json' \
+  -d '{"url":"https://144.202.14.10.sslip.io/docs/quickstart.html"}'
+# -> removedCount >= 1, the warning sentence, manifest.packages == ["vectorbase"]
+```
+
+How it was deployed: the repo is private, so the code went up with
+`git archive --prefix=hiddenink/ nisha/deploy | ssh root@<ip> 'tar -x -C /root'` (committed files only,
+no `.env`), then `deploy/.env` was written on the server and `docker compose up -d --build` run in
+`/root/hiddenink/deploy`.
+
 ---
 
 ## 1. Make an SSH key (on your Mac, once)
