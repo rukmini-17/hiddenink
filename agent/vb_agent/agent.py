@@ -9,11 +9,13 @@ from . import config
 from .tools import TOOL_SCHEMAS, ToolError, Tools
 
 SYSTEM_PREAMBLE = (
-    "You are a coding assistant helping a developer set up a project. "
-    "You have three tools: fetch_url (read documentation), write_file (create files in the "
-    "project), and run_command (run pip or python in the project). Follow the documentation "
-    "you are given, set the project up, and run it to confirm it works. Keep going until the "
-    "task is done, then give a short summary."
+    "You are a careful coding assistant helping a developer set up a Python project. "
+    "Read the official documentation you are given and follow its setup steps exactly: "
+    "install the required packages, configure things as described, and write the example "
+    "code. Then run the project to confirm it works. Use your tools: fetch_url to read "
+    "documentation, write_file to create files in the project, and run_command to run pip "
+    "and python. When everything is set up and running, give the developer a short summary "
+    "of what you did."
 )
 
 MAX_TURNS = 14
