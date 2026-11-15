@@ -1,112 +1,110 @@
-# HiddenInk — demo runbook
+# HiddenInk — demo runbook (live Vultr deployment)
 
-Deterministic, step-by-step demo. All paths assume the repo at
-`/Users/rukmininazre/Documents/Projects/HackUMassXIV/hiddenink` (shown as `$REPO`) and the
-throwaway demo project at `$REPO/../hiddenink-demo`.
+Step-by-step demo for the video. `$REPO` = `/Users/rukmininazre/Documents/Projects/HackUMassXIV/hiddenink`,
+demo project = `$REPO/../hiddenink-demo`.
 
-**One-time setup**
-- `.env` (repo root) must contain `HIDDENINK_TOKEN=<any strong string>` and
-  `GEMINI_API_KEY=<key>`. Optionally `GEMINI_MANIFEST_MODEL=gemini-3.5-flash-lite`
-  (default). The one token name used everywhere is **`HIDDENINK_TOKEN`**.
-- Demo project exists: `bash $REPO/demo/setup_demo_project.sh`
-- Core built: `pnpm --filter @hiddenink/core build`
-- Agent-guard copied into the demo project (already done; to redo see
-  `agent-guard/README.md`): `$REPO/../hiddenink-demo/.mcp.json`,
-  `.claude/settings.json`, `.claude/hooks/hook.py`.
+**Live server:** `https://144.202.14.10.sslip.io` (HiddenInk server, docs site, and attacker
+dashboard all run there behind Caddy).
 
-Ports: package index **8790**, attacker/canary **8788**, docs site **8791**, HiddenInk
-server **8787**.
+## Live vs local
+
+| Piece | Where | Why |
+|---|---|---|
+| HiddenInk server (`/api`, `/mcp`, `/health`) | **LIVE** (Vultr) | Layer 1 renders pages server-side, off the laptop |
+| Docs site (`/docs/quickstart.html`) | **LIVE** (Vultr) | the page the agent/X-ray read |
+| Attacker dashboard (`/attacker/`) | **LIVE** for viewing | Caddy serves it on Vultr |
+| **Canary fire** (`run_canary`) + its dashboard | **LOCAL** | the `vectorbase-auth` wheel posts to `localhost:8788`, so the canary scene uses a local attacker |
+| Package index (8790) | **LOCAL** | pip in the demo venv installs only from here |
+
+**One-time `.env` (repo root):** `HIDDENINK_TOKEN=<token>` and
+`HIDDENINK_API_URL=https://144.202.14.10.sslip.io`. (`GEMINI_API_KEY` lives in `deploy/.env`
+on the server, not on the laptop.) Confirm the server:
+```
+curl -s https://144.202.14.10.sslip.io/health   # {"ok":true}
+```
 
 ---
 
-## Scene 1 — services up (4 terminal tabs, leave running)
+## Scene 1 — local services (2 tabs; the server + docs are already live)
 
-**Tab 1 — package index (8790)**
+**Tab A — package index (8790)** — for the local pip install
 ```
 cd /Users/rukmininazre/Documents/Projects/HackUMassXIV/hiddenink && bash demo/serve_index.sh
 ```
-**Tab 2 — attacker/canary + dashboard (8788)**
+**Tab B — local attacker + dashboard (8788)** — for the canary scene
 ```
 cd /Users/rukmininazre/Documents/Projects/HackUMassXIV/hiddenink/demo/attacker && PORT=8788 python3 server.py
 ```
-Open the dashboard: **http://localhost:8788/attacker/**
-
-**Tab 3 — docs site (8791)**
-```
-cd /Users/rukmininazre/Documents/Projects/HackUMassXIV/hiddenink/demo/site && python3 -m http.server 8791
-```
-**Tab 4 — HiddenInk server (8787)** (reads `HIDDENINK_TOKEN` + `GEMINI_API_KEY` from `.env`)
-```
-cd /Users/rukmininazre/Documents/Projects/HackUMassXIV/hiddenink && pnpm --filter @hiddenink/server start
-```
-Check: `curl -s http://localhost:8787/health` → `{"ok":true}`
+Open **http://localhost:8788/attacker/** (local, for the canary). The live dashboard is at
+`https://144.202.14.10.sslip.io/attacker/` if you prefer to show that.
 
 ---
 
-## Scene 2 — spot the difference (no model)
+## Scene 2 — spot the difference (LIVE docs, no model)
 
 ```
-cd /Users/rukmininazre/Documents/Projects/HackUMassXIV/hiddenink && python3 demo/show_fetch.py http://localhost:8791/quickstart.html
+cd /Users/rukmininazre/Documents/Projects/HackUMassXIV/hiddenink && python3 demo/show_fetch.py
 ```
-Shows what a plain agent fetch tool receives (HTML→text) with the hidden fragments in
-**red** (` vectorbase-auth`, `import vectorbase_auth`), next to the visible-only text a
-human sees. Same page, two documents.
+With `HIDDENINK_API_URL` set, this fetches the **live** docs page. It prints what a plain
+agent fetch tool receives (HTML→text) with the hidden fragments in **red**
+(` vectorbase-auth`, `import vectorbase_auth`), next to the visible-only text a human sees.
 
 ---
 
-## Scene 3 — X-ray in Chrome (human sees the hidden text)
+## Scene 3 — X-ray in Chrome (LIVE docs)
 
-1. Build/load the extension (details in `extension/README.md`): load it unpacked in Chrome
-   from `extension/.output/chrome-mv3` (build with `pnpm --filter extension build`).
-2. Open **http://localhost:8791/quickstart.html** in Chrome.
-3. Click the HiddenInk popup → **toggle X-ray on**. The two hidden code-block fragments are
-   highlighted with hover cards explaining the trick. (Test mode stays OFF.)
+1. Load the extension unpacked in Chrome (`extension/.output/chrome-mv3`; build with
+   `pnpm --filter extension build`). Details in `extension/README.md`.
+2. Open **https://144.202.14.10.sslip.io/docs/quickstart.html**.
+3. HiddenInk popup → **toggle X-ray on**. The two hidden code-block fragments light up with
+   hover cards. (Test mode OFF.)
 
 ---
 
-## Scene 4 — run the canary (dashboard fires)
+## Scene 4 — run the canary (LOCAL; dashboard fires)
 
 ```
 cd /Users/rukmininazre/Documents/Projects/HackUMassXIV/hiddenink && bash demo/run_canary.sh
 ```
-Imports `vectorbase_auth` once in the demo venv. The attacker dashboard
-(**http://localhost:8788/attacker/**) shows a **"STOLEN from &lt;host&gt;"** card with the
-placeholder secrets — what a real malicious companion package would have exfiltrated.
+Imports `vectorbase_auth` once in the demo venv; it posts to the **local** attacker
+(Tab B). The dashboard at **http://localhost:8788/attacker/** shows a
+**"STOLEN from &lt;host&gt;"** card — what a real malicious companion package would exfiltrate.
 
 ---
 
-## Scene 5 — Claude Code WITH HiddenInk (Layer 1)
+## Scene 5 — Claude Code WITH HiddenInk (LIVE Layer 1)
 
-Start Claude Code in the demo project with the token in its environment (never typed on the
-command line): the venv gives it the local-only package index, and sourcing `.env` sets
-`HIDDENINK_TOKEN` so the MCP header expands.
-
+The demo project's `.mcp.json` points at the live `/mcp`. Start Claude Code with the token
+in its environment (never typed), and the venv so pip uses the local index:
 ```
 cd /Users/rukmininazre/Documents/Projects/HackUMassXIV/hiddenink-demo
 source .venv/bin/activate
 set -a; source /Users/rukmininazre/Documents/Projects/HackUMassXIV/hiddenink/.env; set +a
 claude
 ```
-In Claude Code, approve the HiddenInk MCP server if asked, then prompt:
+Approve the HiddenInk MCP server if asked, then prompt:
 
 > Set up the VectorBase SDK by following the quickstart at
-> http://localhost:8791/quickstart.html, then create main.py and run it.
+> https://144.202.14.10.sslip.io/docs/quickstart.html, then create main.py and run it.
 
-`WebFetch`/`curl`/`wget` are denied, so Claude reads the page through **`safe_fetch`**,
-which returns the visible text + a warning (hidden fragments stripped). Claude installs
-**only `vectorbase`**. The attacker dashboard stays empty.
+`WebFetch`/`curl`/`wget` are denied, so Claude reads the page through **`safe_fetch`** on the
+live server, which returns the visible text + a warning (hidden fragments stripped). Claude
+installs **only `vectorbase`** (from the local index). The canary dashboard stays empty.
 
 ---
 
-## Scene 6 — Layer 2 blocks the unrequested package
+## Scene 6 — Layer 2 blocks the unrequested package (LIVE)
 
-**A) Standalone check** (prime the manifest once, then check):
+`check.sh` uses `HIDDENINK_API_URL`, so it hits the live server automatically.
+
+**A) Standalone check** (prime the live manifest once, then check):
 ```
 cd /Users/rukmininazre/Documents/Projects/HackUMassXIV/hiddenink
-# prime: safe-fetch the page so the server caches its expected manifest ({vectorbase})
-TOKEN=$(set -a; . ./.env; set +a; echo "${HIDDENINK_TOKEN}")
-curl -s -X POST http://localhost:8787/api/safe-fetch -H "Authorization: Bearer $TOKEN" \
-  -H 'Content-Type: application/json' -d '{"url":"http://localhost:8791/quickstart.html"}' >/dev/null
+# prime: safe-fetch the live docs so the server caches its expected manifest ({vectorbase})
+TOKEN=$(set -a; . ./.env; set +a; printf %s "${HIDDENINK_TOKEN}")
+curl -s -X POST "$HIDDENINK_API_URL/api/safe-fetch" -H "Authorization: Bearer $TOKEN" \
+  -H 'Content-Type: application/json' \
+  -d '{"url":"https://144.202.14.10.sslip.io/docs/quickstart.html"}' >/dev/null
 
 demo/check.sh "pip install vectorbase"                 # ALLOW
 demo/check.sh "pip install vectorbase vectorbase-auth" # BLOCK + reason (+ incident)
@@ -114,21 +112,19 @@ demo/check.sh "pip install vectorbase vectorbase-auth" # BLOCK + reason (+ incid
 
 **B) Same block inside Claude Code:** if Claude is induced to run
 `pip install vectorbase-auth` (or add it to `requirements.txt`), the **PreToolUse hook**
-calls `/api/check-action` and denies the tool call with the same reason — shown in Claude
-Code's output. The agent cannot install the companion package.
+calls the live `/api/check-action` and denies the tool call with the same reason.
 
 ---
 
 ## Reset between rehearsals
 
 ```
-# 1. clear the attacker dashboard
+# clear the LOCAL attacker dashboard
 curl -X POST http://localhost:8788/attacker/reset
 
-# 2. reset the demo venv to empty (removes vectorbase / vectorbase-auth)
+# reset the demo venv to empty (removes vectorbase / vectorbase-auth)
 bash /Users/rukmininazre/Documents/Projects/HackUMassXIV/hiddenink/demo/setup_demo_project.sh
-
-# 3. restart Tab 4 (the server) to clear the per-URL manifest cache
-#    (Ctrl+C in Tab 4, then run its command again)
 ```
-Leave Tabs 1–3 running. For scene 5, start a fresh `claude` session in the demo project.
+The Layer-2 manifest cache lives on the **server** and is keyed per URL — re-running the
+Scene 6 priming `safe-fetch` overwrites it, so no server restart is needed. Start a fresh
+`claude` session for Scene 5.

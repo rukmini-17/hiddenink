@@ -2,7 +2,7 @@
   "mcpServers": {
     "hiddenink": {
       "type": "http",
-      "url": "http://localhost:8787/mcp",
+      "url": "${HIDDENINK_API_URL:-http://localhost:8787}/mcp",
       "headers": {
         "Authorization": "Bearer ${HIDDENINK_TOKEN}"
       }

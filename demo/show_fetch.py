@@ -9,8 +9,11 @@ Prints, side by side:
 "Hidden" = text inside display:none / visibility:hidden, class "x" / "ai-note", or
 white-on-white color — the tricks on the demo page. Pure stdlib; fetches over HTTP.
 
-Usage:  python3 demo/show_fetch.py http://localhost:8791/quickstart.html
+Usage:  python3 demo/show_fetch.py [url]
+  With no url, defaults to the docs quickstart on $HIDDENINK_API_URL if set (e.g. the live
+  Vultr server), otherwise http://localhost:8791/quickstart.html.
 """
+import os
 import sys
 import urllib.request
 from html.parser import HTMLParser
@@ -92,9 +95,13 @@ def _lines(segments, include_hidden: bool, colorize: bool) -> str:
 
 
 def main():
-    if len(sys.argv) != 2:
-        sys.exit("usage: python3 demo/show_fetch.py <url>")
-    url = sys.argv[1]
+    if len(sys.argv) > 2:
+        sys.exit("usage: python3 demo/show_fetch.py [url]")
+    if len(sys.argv) == 2:
+        url = sys.argv[1]
+    else:
+        base = os.environ.get("HIDDENINK_API_URL", "").rstrip("/")
+        url = f"{base}/docs/quickstart.html" if base else "http://localhost:8791/quickstart.html"
     with urllib.request.urlopen(url, timeout=15) as resp:
         html = resp.read().decode("utf-8", "replace")
     p = Extractor()
