@@ -1,6 +1,6 @@
 # HiddenInk eval: rules-only baseline (local engine)
 
-_81 files (58 attack, 21 benign, 2 hidden-benign) · commit `bfdea34` · Chrome 157.0.8103.78 · 2026-11-14 05:46 UTC_
+_81 files (58 attack, 21 benign, 2 hidden-benign) · commit `9b06acc-dirty` · Chrome 157.0.8103.78 · 2026-11-15 01:03 UTC_
 
 > The corpus is team-written (81 synthetic files), so these numbers describe this corpus, not the open web. See docs/EVAL.md.
 
@@ -15,9 +15,9 @@ _81 files (58 attack, 21 benign, 2 hidden-benign) · commit `bfdea34` · Chrome 
 | Hidden text found (flagged or not) | 54/58 (93%) |
 | **False positives: benign files** | **0/21 (0%)** |
 | False positives: hidden-benign (keyword stuffing) | 0/2 (0%); still reported as hidden text: 2/2 (100%) |
-| Scan time per HTML file, median / worst | 0.5 ms / 1.1 ms |
-| Scan time per PDF file, median / worst | 15 ms / 32 ms |
-| First PDF scan (cold start) | 34 ms |
+| Scan time per HTML file, median / worst | 1.0 ms / 3.6 ms |
+| Scan time per PDF file, median / worst | 15 ms / 63 ms |
+| First PDF scan (cold start) | 70 ms |
 
 ## Per technique
 

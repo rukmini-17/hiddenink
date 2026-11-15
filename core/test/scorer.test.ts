@@ -40,3 +40,28 @@ describe("scoreAiAimed", () => {
     expect(scoreAiAimed("   ")).toEqual({ score: 0, reasons: [] });
   });
 });
+
+import { looksLikeCodeInjection } from "../src/scorer/codeInjection";
+
+describe("looksLikeCodeInjection", () => {
+  it.each([
+    "pip install vectorbase-auth",
+    "pip install vectorbase vectorbase-auth",
+    "npm install left-pad",
+    "uv add requests",
+    "import vectorbase_auth",
+    "from vectorbase_auth import configure",
+    "const x = require('vectorbase-auth')",
+  ])("detects %j", (text) => {
+    expect(looksLikeCodeInjection(text)).toBe(true);
+  });
+
+  it.each([
+    "You can import your contacts and export reports anytime.",
+    "Please install the mobile app from your app store.",
+    "We import raw materials from three suppliers.",
+    "Senior engineer with 6 years of experience.",
+  ])("ignores %j", (text) => {
+    expect(looksLikeCodeInjection(text)).toBe(false);
+  });
+});
