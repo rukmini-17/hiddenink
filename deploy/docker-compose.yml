@@ -1,0 +1,42 @@
+name: hiddenink
+
+# Secrets live only in deploy/.env on the server (typed by hand, never committed, never in
+# an image). SITE_ADDRESS is also read from deploy/.env for compose interpolation + Caddy.
+services:
+  server:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.server
+    env_file: [.env] # HIDDENINK_TOKEN, GEMINI_API_KEY, GEMINI_MANIFEST_MODEL
+    environment:
+      PW_BUNDLED_CHROMIUM: "1"
+      PORT: "8787"
+    expose: ["8787"]
+    restart: unless-stopped
+
+  attacker:
+    build:
+      context: ../demo/attacker
+    environment:
+      PORT: "8788"
+    expose: ["8788"]
+    restart: unless-stopped
+
+  caddy:
+    image: caddy:2.8
+    environment:
+      SITE_ADDRESS: ${SITE_ADDRESS:?set SITE_ADDRESS in deploy/.env}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - ../demo/site:/srv/docs:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on: [server, attacker]
+    restart: unless-stopped
+
+volumes:
+  caddy_data: {}
+  caddy_config: {}
